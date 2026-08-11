@@ -1,0 +1,375 @@
+@use '../basic/variables' as *;
+
+.login-signup {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* ---------- Left side: product branding ---------- */
+
+.login-signup .branding {
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: $space-xl;
+    background-color: $clr-surface;
+    border-right: 1px solid $clr-border;
+}
+
+// Subtle grid backdrop, faded out towards the edges
+.login-signup .branding::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(to right, rgba($clr-border, 0.4) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba($clr-border, 0.4) 1px, transparent 1px);
+    background-size: 52px 52px;
+    -webkit-mask-image: radial-gradient(circle at 30% 35%, #000, transparent 70%);
+    mask-image: radial-gradient(circle at 30% 35%, #000, transparent 70%);
+}
+
+.login-signup .branding-content {
+    position: relative;
+    width: 100%;
+    max-width: $branding-max-width;
+    margin-inline: auto;
+}
+
+.login-signup .brand {
+    display: flex;
+    align-items: center;
+    gap: $space-sm + 2px;
+    margin-bottom: $space-xl;
+}
+
+.login-signup .brand-mark {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-sm;
+    background-color: $clr-accent;
+    color: $clr-text;
+}
+
+.login-signup .brand-mark svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.login-signup .brand-name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.login-signup .branding-title {
+    font-size: clamp(28px, 3.2vw, 42px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: $space-md;
+}
+
+.login-signup .branding-text {
+    max-width: 40ch;
+    color: $clr-text-muted;
+    margin-bottom: $space-xl;
+}
+
+/* ---------- Decorative market chart ---------- */
+
+.login-signup .chart-panel {
+    overflow: hidden;
+    background-color: $clr-bg;
+    border: 1px solid $clr-border;
+    border-radius: $radius-md;
+}
+
+.login-signup .chart {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.login-signup .chart-grid line {
+    stroke: $clr-border;
+    stroke-width: 1;
+    opacity: 0.5;
+}
+
+.login-signup .candle-wick {
+    stroke-width: 0.5;
+}
+
+.login-signup .candle.is-up {
+    .candle-wick {
+        stroke: $clr-success;
+    }
+
+    .candle-body {
+        fill: $clr-success;
+    }
+}
+
+.login-signup .candle.is-down {
+    .candle-wick {
+        stroke: $clr-error;
+    }
+
+    .candle-body {
+        fill: $clr-error;
+    }
+}
+
+// The shape repeats every 600 units, so the loop is seamless
+.login-signup .chart-scroll {
+    animation: chart-scroll 32s linear infinite;
+}
+
+@keyframes chart-scroll {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-600px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-signup .chart-scroll {
+        animation: none;
+    }
+}
+
+/* ---------- Right side: auth card ---------- */
+
+.login-signup .auth {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $space-xl $space-lg;
+}
+
+.login-signup .auth-card {
+    width: 100%;
+    max-width: $card-max-width;
+    padding: 32px;
+    background-color: $clr-surface;
+    border: 1px solid $clr-border;
+    border-radius: $radius-lg;
+    box-shadow: 0 24px 48px rgba(#000, 0.28);
+}
+
+.login-signup .auth-title {
+    font-size: 24px;
+    letter-spacing: -0.01em;
+    margin-bottom: $space-xs + 2px;
+}
+
+.login-signup .auth-subtitle {
+    color: $clr-text-muted;
+    font-size: 14px;
+    margin-bottom: $space-lg;
+}
+
+.login-signup .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+}
+
+.login-signup .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.login-signup .field-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $space-sm;
+}
+
+.login-signup label {
+    color: $clr-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.login-signup input {
+    width: 100%;
+    min-height: $control-height;
+    padding: 12px 14px;
+    background-color: $clr-bg;
+    color: $clr-text;
+    border: 1px solid $clr-border;
+    border-radius: $radius-sm;
+    transition: border-color $transition, box-shadow $transition;
+}
+
+.login-signup input::placeholder {
+    color: rgba($clr-text-muted, 0.65);
+}
+
+.login-signup input:focus {
+    outline: none;
+    border-color: $clr-accent;
+    box-shadow: 0 0 0 3px rgba($clr-accent, 0.25);
+}
+
+.login-signup .toggle-password {
+    padding: 2px 4px;
+    color: $clr-text-muted;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: color $transition;
+
+    &:hover {
+        color: $clr-text;
+    }
+}
+
+.login-signup .btn-primary {
+    min-height: $control-height;
+    margin-top: $space-sm;
+    padding: 12px 20px;
+    background-color: $clr-accent;
+    color: $clr-text;
+    font-weight: 600;
+    border-radius: $radius-sm;
+    transition: background-color $transition, opacity $transition;
+
+    &:hover:not(:disabled) {
+        background-color: $clr-accent-hover;
+    }
+
+    &:disabled {
+        opacity: 0.55;
+    }
+}
+
+.login-signup .auth-msg {
+    padding: 10px 14px;
+    font-size: 13px;
+    border-radius: $radius-sm;
+    border: 1px solid transparent;
+
+    &.error {
+        color: $clr-error-text;
+        background-color: rgba($clr-error, 0.12);
+        border-color: rgba($clr-error, 0.35);
+    }
+
+    &.success {
+        color: $clr-success-text;
+        background-color: rgba($clr-success, 0.12);
+        border-color: rgba($clr-success, 0.35);
+    }
+}
+
+// The success message lives outside the form, so it needs its own spacing
+.login-signup .auth-form + .auth-msg {
+    margin-top: $space-md;
+}
+
+.login-signup .auth-switch {
+    margin-top: $space-lg;
+    padding-top: $space-md;
+    border-top: 1px solid $clr-border;
+    color: $clr-text-muted;
+    font-size: 14px;
+    text-align: center;
+}
+
+.login-signup .link-btn {
+    padding: 0 2px;
+    color: $clr-accent;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    transition: color $transition;
+
+    &:hover:not(:disabled) {
+        color: $clr-text;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: $bp-tablet) {
+    .login-signup {
+        grid-template-columns: 1fr;
+    }
+
+    .login-signup .branding {
+        padding: $space-lg $space-lg $space-xl;
+        border-right: none;
+        border-bottom: 1px solid $clr-border;
+    }
+
+    .login-signup .branding-content {
+        max-width: $card-max-width + 120px;
+    }
+
+    .login-signup .brand {
+        margin-bottom: $space-lg;
+    }
+
+    .login-signup .branding-text {
+        max-width: none;
+        margin-bottom: $space-lg;
+    }
+
+    .login-signup .auth {
+        padding: $space-xl $space-lg;
+    }
+}
+
+@media (max-width: $bp-mobile) {
+    .login-signup .branding {
+        padding: $space-lg $space-md;
+    }
+
+    .login-signup .branding-title {
+        font-size: 26px;
+    }
+
+    .login-signup .branding-text {
+        font-size: 15px;
+        margin-bottom: 0;
+    }
+
+    // Keep the focus on the form on small screens
+    .login-signup .chart-panel {
+        display: none;
+    }
+
+    .login-signup .auth {
+        padding: $space-lg $space-md $space-xl;
+    }
+
+    .login-signup .auth-card {
+        padding: $space-lg $space-md;
+        border-radius: $radius-md;
+    }
+
+    .login-signup .auth-title {
+        font-size: 21px;
+    }
+}
