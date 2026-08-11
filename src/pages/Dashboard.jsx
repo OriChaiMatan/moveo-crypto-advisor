@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { userService } from '../services/user.service'
 import { userPreferencesService } from '../services/user-preferences.service'
+import { MarketNewsList } from '../components/MarketNewsList'
 
 // Readable labels for the values saved during onboarding
 const ASSET_LABELS = {
@@ -42,6 +43,7 @@ export function Dashboard() {
 
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [preferences, setPreferences] = useState(null)
+    const [isPreferencesLoading, setIsPreferencesLoading] = useState(true)
     const accountRef = useRef(null)
 
     const navigate = useNavigate()
@@ -57,6 +59,8 @@ export function Dashboard() {
                 setPreferences(userPreferences)
             } catch (err) {
                 console.log('Loading preferences failed:', err)
+            } finally {
+                setIsPreferencesLoading(false)
             }
         }
     }, [])
@@ -175,6 +179,12 @@ export function Dashboard() {
                         </div>
                     )}
                 </section>
+
+                <MarketNewsList
+                    assets={preferences?.assets || []}
+                    investorType={preferences?.investorType || ''}
+                    isPreferencesLoading={isPreferencesLoading}
+                />
 
             </main>
         </div>

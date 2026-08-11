@@ -1,0 +1,616 @@
+@use '../basic/variables' as *;
+
+/* ---------- Section header ---------- */
+
+.market-news-header {
+    display: flex;
+    gap: $space-sm + 4px;
+    margin-bottom: $space-lg;
+    padding-bottom: $space-md;
+    border-bottom: 1px solid $clr-border;
+}
+
+.market-news .header-accent {
+    flex: none;
+    width: 3px;
+    margin-top: 2px;
+    border-radius: 2px;
+    background-color: $clr-accent;
+}
+
+.market-news .header-text {
+    flex: 1;
+    min-width: 0;
+}
+
+// Title and status share a line, the supporting sentence sits under both
+.market-news .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-sm;
+
+    h2 {
+        font-size: 17px;
+        letter-spacing: -0.01em;
+    }
+}
+
+.market-news .header-subtitle {
+    margin-top: 2px;
+    color: $clr-text-muted;
+    font-size: 13px;
+}
+
+.market-news .header-badge {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    color: $clr-text-muted;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    background-color: $clr-bg;
+    border: 1px solid $clr-border;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.market-news .badge-label.is-short {
+    display: none;
+}
+
+.market-news .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: $clr-success;
+}
+
+.market-news .news-state {
+    padding: $space-md 0;
+    color: $clr-text-muted;
+    font-size: 14px;
+}
+
+/* ---------- List rhythm ---------- */
+
+.market-news-list {
+    display: flex;
+    flex-direction: column;
+}
+
+// The hero sits apart from the feed below it
+.market-news .news-item.is-featured {
+    padding-bottom: $space-lg;
+    margin-bottom: $space-xs;
+    border-bottom: 1px solid $clr-border;
+}
+
+.market-news .news-item + .news-item:not(.is-featured) {
+    margin-top: $space-sm + 2px;
+    padding-top: $space-sm + 2px;
+    border-top: 1px solid rgba($clr-border, 0.5);
+}
+
+.market-news .news-body {
+    position: relative;
+    display: flex;
+    gap: $space-md;
+    min-width: 0;
+    padding: $space-sm;
+    margin-inline: -$space-sm;
+    border: 1px solid transparent;
+    border-radius: $radius-md;
+    transition: background-color $transition, border-color $transition;
+}
+
+.market-news .is-featured.news-body {
+    gap: $space-lg;
+}
+
+.market-news .news-link {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        background-color: rgba($clr-bg, 0.6);
+        border-color: rgba($clr-accent, 0.28);
+    }
+
+    &:focus-visible {
+        outline: 2px solid $clr-accent;
+        outline-offset: 3px;
+    }
+}
+
+/* ---------- Media ---------- */
+
+.market-news .news-media {
+    flex: none;
+    position: relative;
+    overflow: hidden;
+    width: 124px;
+    height: 88px;
+    background-color: $clr-bg;
+    border: 1px solid $clr-border;
+    border-radius: $radius-sm;
+}
+
+.market-news .is-featured .news-media {
+    width: 300px;
+    height: 190px;
+    border-radius: $radius-md;
+}
+
+.market-news .news-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform $transition;
+}
+
+.market-news .news-link:hover .news-image {
+    transform: scale(1.03);
+}
+
+// Keeps photography sitting in the same tonal range as the rest of the section
+.market-news .news-media.has-image::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(#000, 0.35), transparent 55%);
+    pointer-events: none;
+}
+
+/* ---------- Branded fallback media ---------- */
+
+.market-news .news-media-fallback {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background-color: $clr-bg;
+    // Faint grid, so the chart line and ticker stay the strongest elements
+    background-image:
+        linear-gradient(to right, rgba($clr-border, 0.22) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba($clr-border, 0.22) 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+.market-news .fallback-chart {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.market-news .chart-candles rect {
+    fill: rgba($clr-accent, 0.16);
+}
+
+.market-news .chart-line {
+    fill: none;
+    stroke: rgba($clr-accent, 0.95);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+
+    &.is-secondary {
+        stroke: rgba(#22D3EE, 0.32);
+        stroke-width: 1.5;
+    }
+}
+
+.market-news .fallback-label {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+}
+
+.market-news .fallback-ticker {
+    color: $clr-text;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.market-news .is-featured .fallback-ticker {
+    font-size: 22px;
+}
+
+.market-news .fallback-caption {
+    color: $clr-text-muted;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+// The compact thumbnail keeps only the ticker
+.market-news .is-row .fallback-caption {
+    display: none;
+}
+
+/* ---------- Content ---------- */
+
+.market-news .news-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.market-news .news-labels {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: $space-sm + 2px;
+}
+
+.market-news .news-eyebrow {
+    color: $clr-accent;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.market-news .news-tag {
+    padding: 2px 8px;
+    color: $clr-text;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    background-color: rgba($clr-accent, 0.14);
+    border: 1px solid rgba($clr-accent, 0.4);
+    border-radius: 999px;
+}
+
+.market-news .news-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: $clr-text;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+    overflow-wrap: anywhere;
+    transition: color $transition;
+}
+
+.market-news .is-featured .news-title {
+    -webkit-line-clamp: 3;
+    font-size: 22px;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+}
+
+.market-news .news-link:hover .news-title {
+    color: $clr-accent;
+}
+
+.market-news .news-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 6px;
+    color: rgba($clr-text-muted, 0.72);
+    font-size: 12.5px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.market-news .is-featured .news-description {
+    -webkit-line-clamp: 3;
+    margin-top: $space-sm;
+    color: rgba($clr-text-muted, 0.8);
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+// Follows the text instead of being pushed to the bottom of the media height
+.market-news .news-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: $space-sm;
+    color: $clr-text-muted;
+    font-size: 11.5px;
+}
+
+// A little more air around the hero headline and its metadata
+.market-news .is-featured .news-labels {
+    margin-bottom: 14px;
+}
+
+.market-news .is-featured .news-meta {
+    margin-top: 21px;
+}
+
+// Fixed lane on the right, so the arrow sits in the same place on every row
+.market-news .news-arrow-area {
+    flex: none;
+    display: flex;
+    align-items: center;
+    width: 18px;
+}
+
+.market-news .news-source {
+    max-width: 55%;
+    overflow: hidden;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.market-news .meta-dot {
+    color: rgba($clr-border, 0.9);
+}
+
+.market-news .news-time {
+    flex: none;
+}
+
+.market-news .news-arrow {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: $clr-text-muted;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke $transition, transform $transition;
+}
+
+.market-news .news-link:hover .news-arrow {
+    stroke: $clr-accent;
+    transform: translate(2px, -2px);
+}
+
+/* ---------- Loading skeleton ---------- */
+
+.news-skeleton {
+    display: flex;
+    flex-direction: column;
+}
+
+.market-news .skeleton-item {
+    display: flex;
+    gap: $space-md;
+    padding: $space-sm 0;
+}
+
+.market-news .skeleton-item.is-featured {
+    gap: $space-lg;
+    padding-bottom: $space-lg;
+    margin-bottom: $space-xs;
+    border-bottom: 1px solid $clr-border;
+}
+
+.market-news .skeleton-item.is-row + .skeleton-item.is-row {
+    border-top: 1px solid rgba($clr-border, 0.5);
+}
+
+.market-news .skeleton-media {
+    flex: none;
+    width: 124px;
+    height: 88px;
+    border-radius: $radius-sm;
+}
+
+.market-news .skeleton-item.is-featured .skeleton-media {
+    width: 300px;
+    height: 190px;
+    border-radius: $radius-md;
+}
+
+.market-news .skeleton-lines {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+    padding-top: 2px;
+}
+
+.market-news .skeleton-line {
+    height: 11px;
+    border-radius: 6px;
+
+    &.is-tag {
+        width: 54px;
+        height: 12px;
+    }
+
+    &.is-headline {
+        width: 100%;
+        height: 15px;
+    }
+
+    &.is-short {
+        width: 62%;
+    }
+
+    &.is-text {
+        width: 85%;
+    }
+
+    &.is-meta {
+        width: 38%;
+        height: 10px;
+    }
+}
+
+.market-news .skeleton-item.is-featured .skeleton-line.is-headline {
+    height: 20px;
+}
+
+.market-news .skeleton-media,
+.market-news .skeleton-line {
+    background: linear-gradient(90deg, $clr-surface-soft 25%, rgba($clr-border, 0.65) 37%, $clr-surface-soft 63%);
+    background-size: 400% 100%;
+    animation: news-skeleton 1.8s ease-in-out infinite;
+}
+
+@keyframes news-skeleton {
+    from { background-position: 100% 0; }
+    to { background-position: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .market-news .skeleton-media,
+    .market-news .skeleton-line {
+        animation: none;
+    }
+
+    .market-news .news-image,
+    .market-news .news-arrow,
+    .market-news .news-title,
+    .market-news .news-body {
+        transition: none;
+    }
+
+    .market-news .news-link:hover .news-image,
+    .market-news .news-link:hover .news-arrow {
+        transform: none;
+    }
+}
+
+/* ---------- Tablet ---------- */
+
+@media (max-width: $bp-tablet) {
+    .market-news .is-featured .news-media,
+    .market-news .skeleton-item.is-featured .skeleton-media {
+        width: 240px;
+        height: 160px;
+    }
+
+    .market-news .is-featured.news-body,
+    .market-news .skeleton-item.is-featured {
+        gap: $space-md;
+    }
+
+    .market-news .is-featured .news-title {
+        font-size: 20px;
+    }
+
+    .market-news .is-featured .fallback-ticker {
+        font-size: 19px;
+    }
+}
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: $bp-mobile) {
+    .market-news-header {
+        margin-bottom: $space-md;
+        padding-bottom: $space-sm + 4px;
+    }
+
+    // Shorter status label, so the title row still fits on one line
+    .market-news .badge-label.is-full {
+        display: none;
+    }
+
+    .market-news .badge-label.is-short {
+        display: inline;
+    }
+
+    .market-news .header-badge {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    .market-news .header-subtitle {
+        font-size: 12.5px;
+    }
+
+    // The hero becomes a stacked editorial card
+    .market-news .is-featured.news-body,
+    .market-news .skeleton-item.is-featured {
+        flex-direction: column;
+        gap: $space-sm + 4px;
+    }
+
+    .market-news .is-featured .news-media,
+    .market-news .skeleton-item.is-featured .skeleton-media {
+        width: 100%;
+        height: 185px;
+    }
+
+    .market-news .is-featured .news-title {
+        font-size: 18px;
+    }
+
+    .market-news .is-featured .news-meta {
+        margin-top: $space-sm;
+        padding-right: 26px; // keeps the source clear of the arrow
+    }
+
+    // The stacked hero puts the arrow on its own line, so pull it onto the metadata row
+    .market-news .is-featured .news-arrow-area {
+        position: absolute;
+        right: $space-sm;
+        bottom: $space-sm;
+        height: 17px;
+        width: 15px;
+    }
+
+    // Compact rows: small square thumbnail, headline and metadata only
+    .market-news .news-body {
+        gap: $space-sm + 4px;
+    }
+
+    .market-news .is-row .news-media,
+    .market-news .skeleton-item.is-row .skeleton-media {
+        width: 72px;
+        height: 72px;
+    }
+
+    .market-news .is-row .news-labels {
+        margin-bottom: 5px;
+    }
+
+    .market-news .is-row .news-title {
+        -webkit-line-clamp: 3;
+        font-size: 14px;
+    }
+
+    .market-news .is-row .news-description {
+        display: none;
+    }
+
+    .market-news .is-row .news-meta {
+        margin-top: 5px;
+        font-size: 11px;
+    }
+
+    // The whole row is tappable, so the arrow can give its width to the headline
+    .market-news .is-row .news-arrow-area {
+        display: none;
+    }
+
+    .market-news .news-item + .news-item:not(.is-featured) {
+        margin-top: $space-sm;
+        padding-top: $space-sm;
+    }
+
+    .market-news .news-source {
+        max-width: 55%;
+    }
+
+    .market-news .news-tag {
+        font-size: 9px;
+        padding: 2px 6px;
+    }
+}
