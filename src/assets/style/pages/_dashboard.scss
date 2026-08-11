@@ -1,0 +1,374 @@
+@use '../basic/variables' as *;
+
+$dashboard-max-width: 1100px;
+
+.dashboard {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: $clr-bg;
+}
+
+/* ---------- Header ---------- */
+
+.dashboard-header {
+    background-color: $clr-surface;
+    border-bottom: 1px solid $clr-border;
+}
+
+.dashboard-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-md;
+    max-width: $dashboard-max-width;
+    margin-inline: auto;
+    padding: 10px $space-lg;
+}
+
+.dashboard .brand {
+    display: flex;
+    align-items: center;
+    gap: $space-sm + 2px;
+}
+
+.dashboard .brand-mark {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-sm;
+    background-color: $clr-accent;
+    color: $clr-text;
+}
+
+.dashboard .brand-mark svg {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.dashboard .brand-name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* ---------- Account control ---------- */
+
+.dashboard .header-account {
+    position: relative;
+    min-width: 0;
+}
+
+.dashboard .account-trigger {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    max-width: 220px;
+    padding: 5px 10px 5px 5px;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    transition: background-color $transition, border-color $transition;
+
+    &:hover,
+    &[aria-expanded='true'] {
+        background-color: $clr-bg;
+        border-color: $clr-border;
+    }
+}
+
+.dashboard .account-avatar {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: rgba($clr-accent, 0.2);
+    color: $clr-text;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.dashboard .account-name {
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.dashboard .account-chevron {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: $clr-text-muted;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform $transition;
+}
+
+.dashboard .account-trigger[aria-expanded='true'] .account-chevron {
+    transform: rotate(180deg);
+}
+
+/* ---------- Account menu ---------- */
+
+.dashboard .account-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 20;
+    min-width: 190px;
+    padding: 6px;
+    background-color: $clr-surface;
+    border: 1px solid $clr-border;
+    border-radius: $radius-md;
+    box-shadow: 0 16px 32px rgba(#000, 0.4);
+}
+
+.dashboard .menu-item {
+    display: block;
+    width: 100%;
+    padding: 9px 12px;
+    color: $clr-text;
+    font-size: 14px;
+    text-align: left;
+    border-radius: $radius-sm - 2px;
+    transition: background-color $transition, color $transition;
+
+    &:hover {
+        background-color: $clr-surface-soft;
+    }
+
+    &:focus-visible {
+        outline-offset: -2px;
+    }
+}
+
+.dashboard .menu-separator {
+    height: 1px;
+    margin: 6px 4px;
+    background-color: $clr-border;
+}
+
+.dashboard .menu-item-logout:hover {
+    color: $clr-error-text;
+    background-color: rgba($clr-error, 0.12);
+}
+
+/* ---------- Main ---------- */
+
+.dashboard-main {
+    max-width: $dashboard-max-width;
+    margin-inline: auto;
+    padding: $space-xl $space-lg;
+}
+
+.dashboard-intro {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: $space-lg;
+    padding: $space-lg;
+    background-color: $clr-surface;
+    border: 1px solid $clr-border;
+    border-radius: $radius-lg;
+
+    // Faint market grid, faded out towards the edges
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(to right, rgba($clr-border, 0.35) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba($clr-border, 0.35) 1px, transparent 1px);
+        background-size: 44px 44px;
+        -webkit-mask-image: radial-gradient(circle at 20% 10%, #000, transparent 70%);
+        mask-image: radial-gradient(circle at 20% 10%, #000, transparent 70%);
+    }
+
+    // Soft accent wash in the top corner
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(600px circle at 10% -30%, rgba($clr-accent, 0.16), transparent 60%);
+    }
+
+    // Keeps the content above both decorative layers
+    > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    h1 {
+        font-size: clamp(22px, 4.5vw, 30px);
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        margin-bottom: $space-sm;
+    }
+}
+
+.dashboard .intro-greeting {
+    margin-bottom: 6px;
+    color: $clr-text-muted;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.dashboard .intro-text {
+    max-width: 56ch;
+    color: $clr-text-muted;
+    font-size: 14px;
+}
+
+/* ---------- Personalization tags ---------- */
+
+.dashboard .intro-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-sm;
+    margin-top: $space-md;
+}
+
+.dashboard .tag-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+// Metadata, not controls, so no hover or pointer treatment
+.dashboard .tag {
+    padding: 4px 10px;
+    color: $clr-text-muted;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: $clr-bg;
+    border: 1px solid $clr-border;
+    border-radius: 999px;
+}
+
+.dashboard .tag-asset {
+    color: $clr-text;
+    background-color: rgba($clr-accent, 0.12);
+    border-color: rgba($clr-accent, 0.45);
+}
+
+// The investor profile reads apart from the assets and the content tags
+.dashboard .tag-investor {
+    color: #8FDCEA;
+    background-color: rgba(#22D3EE, 0.1);
+    border-color: rgba(#22D3EE, 0.4);
+}
+
+/* ---------- Sections ---------- */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $space-lg;
+}
+
+// The wide sections keep the grid balanced while the others sit side by side
+.dashboard .section-prices,
+.dashboard .section-meme {
+    grid-column: 1 / -1;
+}
+
+.dashboard-section {
+    min-width: 0;
+    padding: $space-lg;
+    background-color: $clr-surface;
+    border: 1px solid $clr-border;
+    border-radius: $radius-lg;
+}
+
+.dashboard .section-header {
+    margin-bottom: $space-md;
+
+    h2 {
+        font-size: 17px;
+        letter-spacing: -0.01em;
+    }
+}
+
+// Placeholder until the real section content is built
+.dashboard .section-placeholder {
+    display: grid;
+    place-items: center;
+    min-height: 120px;
+    padding: $space-md;
+    color: $clr-text-muted;
+    font-size: 14px;
+    text-align: center;
+    border: 1px dashed $clr-border;
+    border-radius: $radius-md;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: $bp-tablet) {
+    .dashboard-header-inner {
+        padding: 10px $space-md;
+    }
+
+    .dashboard-main {
+        padding: $space-lg $space-md;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: $space-md;
+    }
+}
+
+@media (max-width: $bp-mobile) {
+    .dashboard-header-inner {
+        padding: 8px $space-md;
+    }
+
+    .dashboard .brand-name {
+        font-size: 14px;
+    }
+
+    // The avatar and chevron are enough on a small screen
+    .dashboard .account-name {
+        display: none;
+    }
+
+    .dashboard .account-trigger {
+        padding: 5px 8px 5px 5px;
+    }
+
+    .dashboard-main {
+        padding: $space-lg $space-md $space-xl;
+    }
+
+    .dashboard-intro {
+        margin-bottom: $space-md;
+        padding: $space-md;
+        border-radius: $radius-md;
+    }
+
+    .dashboard .intro-tags {
+        gap: 6px;
+        margin-top: $space-sm + 4px;
+    }
+
+    .dashboard-section {
+        padding: $space-md;
+        border-radius: $radius-md;
+    }
+
+    .dashboard .section-placeholder {
+        min-height: 100px;
+    }
+}

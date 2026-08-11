@@ -142,8 +142,7 @@ export function LoginSignup() {
                 : await userService.login(credentials)
             setLoggedinUser(user)
             setCredentials({ name: '', email: '', password: '' })
-            // A user who already finished onboarding stays here until there is a dashboard
-            if (!user.onboardingCompleted) navigate('/onboarding')
+            navigate(user.onboardingCompleted ? '/dashboard' : '/onboarding')
         } catch (err) {
             console.log('Authentication failed:', err)
             setErrorMsg(err.message)
