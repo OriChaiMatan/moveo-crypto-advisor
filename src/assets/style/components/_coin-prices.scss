@@ -1,0 +1,292 @@
+@use '../basic/variables' as *;
+
+// Keeps the section clear of the one below it
+.coin-prices {
+    margin-bottom: $space-lg;
+}
+
+/* ---------- Section header ---------- */
+
+.coin-prices-header {
+    display: flex;
+    gap: $space-sm + 4px;
+    margin-bottom: $space-lg;
+    padding-bottom: $space-md;
+    border-bottom: 1px solid $clr-border;
+
+    h2 {
+        font-size: 17px;
+        letter-spacing: -0.01em;
+    }
+}
+
+.coin-prices .header-accent {
+    flex: none;
+    width: 3px;
+    margin-top: 2px;
+    border-radius: 2px;
+    background-color: $clr-accent;
+}
+
+.coin-prices .header-subtitle {
+    margin-top: 2px;
+    color: $clr-text-muted;
+    font-size: 13px;
+}
+
+.coin-prices .coin-state {
+    padding: $space-md 0;
+    color: $clr-text-muted;
+    font-size: 14px;
+}
+
+/* ---------- Strip ---------- */
+
+// One row that scrolls sideways instead of wrapping, with the scrollbar hidden
+.coin-strip {
+    display: flex;
+    gap: $space-sm + 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    > li {
+        flex: 1 1 0;
+        min-width: 134px;
+    }
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* ---------- Card ---------- */
+
+.coin-prices .coin-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+    background-color: rgba($clr-bg, 0.75);
+    border: 1px solid rgba($clr-border, 0.75);
+    border-radius: $radius-md;
+    transition: background-color $transition, border-color $transition, transform $transition;
+}
+
+.coin-prices .coin-card:hover {
+    background-color: $clr-bg;
+    border-color: $clr-border;
+    transform: translateY(-1px);
+}
+
+// A thin edge marks the user's own assets without flooding the row with colour
+.coin-prices .coin-card.is-selected {
+    background-color: rgba($clr-accent, 0.05);
+    border-color: rgba($clr-accent, 0.32);
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: $clr-accent;
+    }
+
+    &:hover {
+        background-color: rgba($clr-accent, 0.08);
+        border-color: rgba($clr-accent, 0.45);
+    }
+}
+
+.coin-top {
+    padding: $space-sm + 4px $space-sm + 4px 0;
+}
+
+.coin-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+.coin-prices .coin-logo {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    opacity: 0.9;
+    transition: opacity $transition;
+}
+
+.coin-prices .coin-card:hover .coin-logo {
+    opacity: 1;
+}
+
+.coin-prices .coin-symbol {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+// Small star, so the selected state reads as a mark rather than a UI label
+.coin-prices .coin-owned {
+    flex: none;
+    width: 11px;
+    height: 11px;
+    margin-left: auto;
+    fill: $clr-accent;
+}
+
+.coin-prices .coin-name {
+    display: block;
+    overflow: hidden;
+    margin-top: 3px;
+    color: $clr-text-muted;
+    font-size: 11px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.coin-prices .coin-price {
+    margin-top: 14px;
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+}
+
+.coin-prices .coin-change {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    font-weight: 600;
+
+    &.is-up {
+        color: $clr-success;
+    }
+
+    &.is-down {
+        color: $clr-error;
+    }
+}
+
+// The chart sits flush against the card edges, so it reads as part of the tile
+.coin-chart {
+    margin-top: auto;
+    padding-top: $space-sm + 2px;
+}
+
+.coin-prices .coin-sparkline {
+    display: block;
+    width: 100%;
+    height: 38px;
+
+    .sparkline-line {
+        fill: none;
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .sparkline-area {
+        stroke: none;
+    }
+
+    &.is-up {
+        .sparkline-line { stroke: rgba($clr-success, 0.8); }
+        .sparkline-area { fill: rgba($clr-success, 0.07); }
+    }
+
+    &.is-down {
+        .sparkline-line { stroke: rgba($clr-error, 0.8); }
+        .sparkline-area { fill: rgba($clr-error, 0.07); }
+    }
+}
+
+.coin-prices .coin-card:hover .sparkline-line {
+    stroke-opacity: 1;
+}
+
+/* ---------- Skeleton ---------- */
+
+.coin-prices .coin-card.is-skeleton {
+    gap: $space-sm;
+    min-width: 134px;
+    padding: $space-sm + 4px;
+
+    &:hover {
+        transform: none;
+    }
+}
+
+.coin-prices .skeleton-block {
+    border-radius: 6px;
+    background: linear-gradient(90deg, $clr-surface-soft 25%, rgba($clr-border, 0.65) 37%, $clr-surface-soft 63%);
+    background-size: 400% 100%;
+    animation: coin-skeleton 1.8s ease-in-out infinite;
+
+    &.is-header {
+        height: 22px;
+    }
+
+    &.is-price {
+        width: 70%;
+        height: 18px;
+    }
+
+    &.is-footer {
+        height: 24px;
+        margin-top: auto;
+    }
+}
+
+@keyframes coin-skeleton {
+    from { background-position: 100% 0; }
+    to { background-position: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .coin-prices .skeleton-block {
+        animation: none;
+    }
+
+    .coin-prices .coin-card {
+        transition: none;
+    }
+
+    .coin-prices .coin-card:hover {
+        transform: none;
+    }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: $bp-tablet) {
+    .coin-strip > li {
+        flex: 0 0 auto;
+        width: 142px;
+    }
+}
+
+@media (max-width: $bp-mobile) {
+    .coin-prices-header {
+        margin-bottom: $space-md;
+        padding-bottom: $space-sm + 4px;
+    }
+
+    .coin-strip > li {
+        width: 140px;
+    }
+
+    .coin-prices .coin-price {
+        font-size: 16.5px;
+    }
+
+    .coin-prices .coin-sparkline {
+        height: 34px;
+    }
+}

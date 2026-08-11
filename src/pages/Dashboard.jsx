@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { userService } from '../services/user.service'
 import { userPreferencesService } from '../services/user-preferences.service'
+import { dashboardService } from '../services/dashboard.service'
+import { CoinPricesList } from '../components/CoinPricesList'
+import { CoinData } from '../components/CoinData'
 import { MarketNewsList } from '../components/MarketNewsList'
 
 // Readable labels for the values saved during onboarding
@@ -44,6 +47,9 @@ export function Dashboard() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [preferences, setPreferences] = useState(null)
     const [isPreferencesLoading, setIsPreferencesLoading] = useState(true)
+    const [coins, setCoins] = useState([])
+    const [isCoinsLoading, setIsCoinsLoading] = useState(true)
+    const [hasCoinsFailed, setHasCoinsFailed] = useState(false)
     const accountRef = useRef(null)
 
     const navigate = useNavigate()
@@ -64,6 +70,29 @@ export function Dashboard() {
             }
         }
     }, [])
+
+    // Coin data is loaded once here, so several sections can share it
+    useEffect(() => {
+        if (isPreferencesLoading) return
+
+        loadCoins()
+
+        async function loadCoins() {
+            setIsCoinsLoading(true)
+            setHasCoinsFailed(false)
+
+            try {
+                const coinData = await dashboardService.getCoinData(preferences?.assets || [])
+                setCoins(coinData)
+            } catch (err) {
+                console.log('Loading coin prices failed:', err.message)
+                setCoins([])
+                setHasCoinsFailed(true)
+            } finally {
+                setIsCoinsLoading(false)
+            }
+        }
+    }, [isPreferencesLoading])
 
     useEffect(() => {
         if (!isMenuOpen) return
@@ -179,6 +208,18 @@ export function Dashboard() {
                         </div>
                     )}
                 </section>
+
+                <CoinPricesList
+                    coins={coins}
+                    isLoading={isCoinsLoading}
+                    hasFailed={hasCoinsFailed}
+                />
+
+                <CoinData
+                    coins={coins}
+                    isLoading={isCoinsLoading}
+                    hasFailed={hasCoinsFailed}
+                />
 
                 <MarketNewsList
                     assets={preferences?.assets || []}

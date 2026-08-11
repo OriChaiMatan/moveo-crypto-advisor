@@ -1,0 +1,331 @@
+@use '../basic/variables' as *;
+
+.coin-data {
+    margin-bottom: $space-lg;
+}
+
+/* ---------- Section header ---------- */
+
+.coin-data-header {
+    display: flex;
+    gap: $space-sm + 4px;
+    margin-bottom: $space-lg;
+    padding-bottom: $space-md;
+    border-bottom: 1px solid $clr-border;
+
+    h2 {
+        font-size: 17px;
+        letter-spacing: -0.01em;
+    }
+}
+
+.coin-data .header-accent {
+    flex: none;
+    width: 3px;
+    margin-top: 2px;
+    border-radius: 2px;
+    background-color: $clr-accent;
+}
+
+.coin-data .header-subtitle {
+    margin-top: 2px;
+    color: $clr-text-muted;
+    font-size: 13px;
+}
+
+.coin-data .coin-data-state {
+    padding: $space-md 0;
+    color: $clr-text-muted;
+    font-size: 14px;
+}
+
+/* ---------- Coin tabs ---------- */
+
+.coin-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    margin-bottom: $space-md;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.coin-data .coin-tab {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    color: $clr-text-muted;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background-color: $clr-bg;
+    border: 1px solid $clr-border;
+    border-radius: 999px;
+    transition: color $transition, border-color $transition, background-color $transition;
+
+    img {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+    }
+
+    &:hover {
+        color: $clr-text;
+        border-color: $clr-text-muted;
+    }
+
+    &.is-active {
+        color: $clr-text;
+        background-color: rgba($clr-accent, 0.14);
+        border-color: rgba($clr-accent, 0.5);
+    }
+}
+
+/* ---------- Panel ---------- */
+
+.coin-panel {
+    padding: $space-lg;
+    background-color: rgba($clr-bg, 0.75);
+    border: 1px solid rgba($clr-border, 0.75);
+    border-radius: $radius-md;
+}
+
+.panel-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $space-md;
+    flex-wrap: wrap;
+}
+
+.coin-identity {
+    display: flex;
+    align-items: center;
+    gap: $space-sm + 2px;
+    min-width: 0;
+}
+
+.coin-data .identity-logo {
+    flex: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+}
+
+.coin-data .identity-name {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.coin-data .identity-symbol {
+    color: $clr-text-muted;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+}
+
+.coin-pricing {
+    text-align: right;
+}
+
+.coin-data .pricing-price {
+    font-size: 26px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+}
+
+.coin-data .pricing-change {
+    display: inline-block;
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 600;
+
+    &.is-up {
+        color: $clr-success;
+    }
+
+    &.is-down {
+        color: $clr-error;
+    }
+}
+
+.coin-data .change-label {
+    color: $clr-text-muted;
+    font-weight: 500;
+}
+
+/* ---------- Stats ---------- */
+
+.coin-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $space-sm;
+    margin-top: $space-lg;
+    padding-top: $space-md;
+    border-top: 1px solid rgba($clr-border, 0.6);
+
+    dt {
+        color: $clr-text-muted;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    dd {
+        margin: 4px 0 0;
+        font-size: 16px;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+}
+
+/* ---------- Chart ---------- */
+
+.coin-data .chart-label {
+    margin-top: $space-lg;
+    color: $clr-text-muted;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.coin-chart-area {
+    display: grid;
+    place-items: center;
+    height: 220px;
+    margin-top: $space-md;
+}
+
+.coin-data .coin-chart {
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    .chart-line {
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .chart-area {
+        stroke: none;
+    }
+
+    &.is-up {
+        .chart-line { stroke: $clr-success; }
+        .chart-area { fill: rgba($clr-success, 0.1); }
+    }
+
+    &.is-down {
+        .chart-line { stroke: $clr-error; }
+        .chart-area { fill: rgba($clr-error, 0.1); }
+    }
+}
+
+.coin-data .chart-state {
+    color: $clr-text-muted;
+    font-size: 13px;
+}
+
+/* ---------- Skeletons ---------- */
+
+.coin-data .chart-skeleton {
+    width: 100%;
+    height: 100%;
+    border-radius: $radius-sm;
+}
+
+.coin-data-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+}
+
+.coin-data .skeleton-block {
+    border-radius: $radius-sm;
+
+    &.is-identity {
+        height: 46px;
+    }
+
+    &.is-stats {
+        height: 42px;
+    }
+
+    &.is-chart {
+        height: 200px;
+    }
+}
+
+.coin-data .skeleton-block,
+.coin-data .chart-skeleton {
+    background: linear-gradient(90deg, $clr-surface-soft 25%, rgba($clr-border, 0.65) 37%, $clr-surface-soft 63%);
+    background-size: 400% 100%;
+    animation: coin-data-skeleton 1.8s ease-in-out infinite;
+}
+
+@keyframes coin-data-skeleton {
+    from { background-position: 100% 0; }
+    to { background-position: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .coin-data .skeleton-block,
+    .coin-data .chart-skeleton {
+        animation: none;
+    }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: $bp-mobile) {
+    .coin-data-header {
+        margin-bottom: $space-md;
+        padding-bottom: $space-sm + 4px;
+    }
+
+    .coin-panel {
+        padding: $space-md;
+    }
+
+    // Identity and price stack instead of sitting on one line
+    .panel-top {
+        flex-direction: column;
+        gap: $space-sm;
+    }
+
+    .coin-pricing {
+        text-align: left;
+    }
+
+    .coin-data .pricing-price {
+        font-size: 22px;
+    }
+
+    .coin-stats {
+        margin-top: $space-md;
+
+        dd {
+            font-size: 15px;
+        }
+    }
+
+    .coin-data .chart-label {
+        margin-top: $space-md;
+    }
+
+    .coin-chart-area {
+        height: 170px;
+    }
+}

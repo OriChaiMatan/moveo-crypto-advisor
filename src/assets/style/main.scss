@@ -2,4 +2,6 @@
 @use './pages/login-signup';
 @use './pages/onboarding';
 @use './pages/dashboard';
+@use './components/coin-prices';
+@use './components/coin-data';
 @use './components/market-news';
