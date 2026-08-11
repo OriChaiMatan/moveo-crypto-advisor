@@ -5,6 +5,7 @@ import { userPreferencesService } from '../services/user-preferences.service'
 import { dashboardService } from '../services/dashboard.service'
 import { CoinPricesList } from '../components/CoinPricesList'
 import { CoinData } from '../components/CoinData'
+import { AIInsight } from '../components/AIInsight'
 import { MarketNewsList } from '../components/MarketNewsList'
 
 // Readable labels for the values saved during onboarding
@@ -219,6 +220,13 @@ export function Dashboard() {
                     coins={coins}
                     isLoading={isCoinsLoading}
                     hasFailed={hasCoinsFailed}
+                />
+
+                <AIInsight
+                    coins={coins}
+                    investorType={preferences?.investorType || ''}
+                    contentTypes={preferences?.contentTypes || []}
+                    isCoinsLoading={isCoinsLoading}
                 />
 
                 <MarketNewsList
