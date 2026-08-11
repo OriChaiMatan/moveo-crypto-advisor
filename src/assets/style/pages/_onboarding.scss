@@ -1,0 +1,485 @@
+@use '../basic/variables' as *;
+
+.onboarding {
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: $space-xl $space-lg;
+    background-color: $clr-bg;
+}
+
+// margin auto instead of flex centering, so tall content never gets clipped
+.onboarding-container {
+    width: 100%;
+    max-width: $onboarding-max-width;
+    margin: auto;
+}
+
+/* ---------- Header ---------- */
+
+.onboarding .brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-sm + 2px;
+    margin-bottom: $space-lg;
+}
+
+.onboarding .brand-mark {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-sm;
+    background-color: $clr-accent;
+    color: $clr-text;
+}
+
+.onboarding .brand-mark svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.onboarding .brand-name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.onboarding-header {
+    margin-bottom: $space-lg;
+    text-align: center;
+
+    h1 {
+        font-size: clamp(24px, 2.6vw, 32px);
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        margin-bottom: $space-sm;
+    }
+
+    p {
+        max-width: 46ch;
+        margin-inline: auto;
+        color: $clr-text-muted;
+        font-size: 15px;
+    }
+}
+
+/* ---------- Card ---------- */
+
+.onboarding-card {
+    padding: 32px;
+    background-color: $clr-surface;
+    border: 1px solid $clr-border;
+    border-radius: $radius-lg;
+    box-shadow: 0 24px 48px rgba(#000, 0.28);
+}
+
+/* ---------- Progress ---------- */
+
+.onboarding-progress {
+    margin-bottom: $space-lg;
+}
+
+.onboarding .progress-label {
+    display: block;
+    margin-bottom: $space-sm;
+    color: $clr-text-muted;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.onboarding .progress-track {
+    height: 4px;
+    border-radius: 2px;
+    background-color: $clr-bg;
+    overflow: hidden;
+
+    &.is-step-1 .progress-bar {
+        width: 33.33%;
+    }
+
+    &.is-step-2 .progress-bar {
+        width: 66.66%;
+    }
+
+    &.is-step-3 .progress-bar {
+        width: 100%;
+    }
+}
+
+.onboarding .progress-bar {
+    height: 100%;
+    border-radius: 2px;
+    background-color: $clr-accent;
+    transition: width $transition;
+}
+
+/* ---------- Step content ---------- */
+
+// Reserves room for the tallest step, so the card keeps the same height
+// and the buttons stay put while moving between steps
+.onboarding-body {
+    min-height: 220px;
+}
+
+/* ---------- Question ---------- */
+
+.onboarding-step {
+    h2 {
+        font-size: 19px;
+        letter-spacing: -0.01em;
+        margin-bottom: $space-xs + 2px;
+    }
+}
+
+.onboarding .step-hint {
+    margin-bottom: $space-md;
+    color: $clr-text-muted;
+    font-size: 13px;
+}
+
+/* ---------- Options ---------- */
+
+.onboarding .options {
+    display: grid;
+    gap: $space-sm + 4px;
+}
+
+// Grid items default to min-width auto, which lets long labels widen a column
+.onboarding .option,
+.onboarding .option-text {
+    min-width: 0;
+}
+
+.onboarding .options-assets {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.onboarding .options-investor {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.onboarding .options-content {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+// The real input stays in the DOM for keyboard and screen reader support
+.onboarding .option-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.onboarding .option-box {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    height: 100%;
+    background-color: $clr-bg;
+    border: 1px solid $clr-border;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: border-color $transition, background-color $transition;
+}
+
+.onboarding .option:hover .option-box {
+    border-color: rgba($clr-accent, 0.6);
+}
+
+.onboarding .option-input:checked + .option-box {
+    border-color: $clr-accent;
+    background-color: rgba($clr-accent, 0.12);
+}
+
+.onboarding .option-input:focus-visible + .option-box {
+    outline: 2px solid $clr-accent;
+    outline-offset: 2px;
+}
+
+.onboarding .option-label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ---------- Option icons ---------- */
+
+.onboarding .option-icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+// Investor and content icons follow the interface colors
+.onboarding .option-card .option-icon {
+    color: $clr-text-muted;
+    transition: color $transition;
+}
+
+.onboarding .option-card .option-input:checked + .option-box .option-icon {
+    color: $clr-accent;
+}
+
+// Asset icons keep a restrained version of each coin's own color
+.onboarding .icon-bitcoin { color: #F7931A; }
+.onboarding .icon-ethereum { color: #8FA0F5; }
+.onboarding .icon-solana { color: #2ADFA0; }
+.onboarding .icon-xrp { color: #A9B4C4; }
+.onboarding .icon-bnb { color: #F3BA2F; }
+.onboarding .icon-dogecoin { color: #D6B84C; }
+.onboarding .icon-cardano { color: #5A8DF2; }
+.onboarding .icon-avalanche { color: #E84142; }
+
+// Asset chips
+.onboarding .option-chip .option-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    position: relative;
+    min-height: 68px;
+    padding: 12px 34px 12px 14px; // room for the marker in the corner
+}
+
+.onboarding .option-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.onboarding .option-symbol {
+    color: $clr-text-muted;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.onboarding .option-input:checked + .option-box .option-symbol {
+    color: $clr-accent;
+}
+
+// Investor and content cards
+.onboarding .option-card .option-box {
+    justify-content: space-between;
+    min-height: 64px;
+    padding: 14px 16px;
+}
+
+.onboarding .option-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.onboarding .option-description {
+    color: $clr-text-muted;
+    font-size: 12px;
+}
+
+/* ---------- Selection markers ---------- */
+
+.onboarding .option-marker {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border: 1px solid $clr-border;
+    transition: border-color $transition, background-color $transition;
+}
+
+.onboarding .option-marker-multi {
+    border-radius: 5px;
+}
+
+.onboarding .option-marker-single {
+    border-radius: 50%;
+}
+
+// The chip marker sits in the corner instead of in the flow
+.onboarding .option-chip .option-marker {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.onboarding .check-icon {
+    width: 12px;
+    height: 12px;
+    fill: none;
+    stroke: $clr-text;
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0;
+    transition: opacity $transition;
+}
+
+.onboarding .option-marker-single::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: $clr-text;
+    opacity: 0;
+    transition: opacity $transition;
+}
+
+.onboarding .option-input:checked + .option-box .option-marker {
+    background-color: $clr-accent;
+    border-color: $clr-accent;
+}
+
+.onboarding .option-input:checked + .option-box .check-icon,
+.onboarding .option-input:checked + .option-box .option-marker-single::after {
+    opacity: 1;
+}
+
+/* ---------- Error ---------- */
+
+.onboarding .error-msg {
+    margin-top: $space-md;
+    padding: 10px 14px;
+    color: $clr-error-text;
+    font-size: 13px;
+    background-color: rgba($clr-error, 0.12);
+    border: 1px solid rgba($clr-error, 0.35);
+    border-radius: $radius-sm;
+}
+
+/* ---------- Actions ---------- */
+
+.onboarding-actions {
+    display: flex;
+    gap: $space-sm + 4px;
+    margin-top: $space-lg;
+    padding-top: $space-lg;
+    border-top: 1px solid $clr-border;
+}
+
+.onboarding .btn-primary,
+.onboarding .btn-secondary {
+    min-height: $control-height;
+    padding: 12px 24px;
+    font-weight: 600;
+    border-radius: $radius-sm;
+    transition: background-color $transition, border-color $transition, color $transition, opacity $transition;
+}
+
+// Keeps the primary action on the right, with or without a Back button
+.onboarding .btn-primary {
+    margin-left: auto;
+    background-color: $clr-accent;
+    color: $clr-text;
+
+    &:hover:not(:disabled) {
+        background-color: $clr-accent-hover;
+    }
+
+    &:disabled {
+        opacity: 0.55;
+    }
+}
+
+.onboarding .btn-secondary {
+    color: $clr-text-muted;
+    background-color: transparent;
+    border: 1px solid $clr-border;
+
+    &:hover:not(:disabled) {
+        color: $clr-text;
+        border-color: $clr-text-muted;
+    }
+
+    &:disabled {
+        opacity: 0.55;
+    }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: $bp-tablet) {
+    .onboarding {
+        padding: $space-lg $space-md;
+    }
+
+    // Assets drop to three columns here, so the tallest step needs more room
+    .onboarding-body {
+        min-height: 300px;
+    }
+
+    .onboarding .options-assets {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: $bp-mobile) {
+    .onboarding {
+        padding: $space-lg $space-md $space-xl;
+    }
+
+    .onboarding .brand {
+        margin-bottom: $space-md;
+    }
+
+    .onboarding-header {
+        margin-bottom: $space-md;
+        text-align: left;
+
+        p {
+            font-size: 14px;
+            margin-inline: 0;
+        }
+    }
+
+    .onboarding-card {
+        padding: $space-lg $space-md;
+        border-radius: $radius-md;
+    }
+
+    // Every step is tall on mobile anyway, so let the card follow its content
+    .onboarding-body {
+        min-height: 0;
+    }
+
+    // Top aligned, so the header keeps its place whatever the step contains
+    .onboarding-container {
+        margin: 0 auto;
+    }
+
+    .onboarding .options-assets {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .onboarding .options-investor,
+    .onboarding .options-content {
+        grid-template-columns: 1fr;
+    }
+
+    // Primary action on top, so it stays within thumb reach
+    .onboarding-actions {
+        flex-direction: column-reverse;
+        margin-top: $space-md;
+        padding-top: $space-md;
+    }
+
+    .onboarding .btn-primary,
+    .onboarding .btn-secondary {
+        width: 100%;
+        margin-left: 0;
+    }
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { userService } from '../services/user.service'
 
 // A decorative candle sequence: [open, close, high, low].
@@ -114,6 +115,8 @@ export function LoginSignup() {
     const [isPasswordShown, setIsPasswordShown] = useState(false)
     const [loggedinUser, setLoggedinUser] = useState(userService.getLoggedinUser())
 
+    const navigate = useNavigate()
+
     function handleChange({ target }) {
         const { name, value } = target
         setCredentials(prevCredentials => ({ ...prevCredentials, [name]: value }))
@@ -139,6 +142,8 @@ export function LoginSignup() {
                 : await userService.login(credentials)
             setLoggedinUser(user)
             setCredentials({ name: '', email: '', password: '' })
+            // A user who already finished onboarding stays here until there is a dashboard
+            if (!user.onboardingCompleted) navigate('/onboarding')
         } catch (err) {
             console.log('Authentication failed:', err)
             setErrorMsg(err.message)

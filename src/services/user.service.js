@@ -7,6 +7,7 @@ export const userService = {
     logout,
     getLoggedinUser,
     saveLocalUser,
+    completeOnboarding,
 }
 
 async function signup(userCred) {
@@ -48,6 +49,20 @@ async function login(userCred) {
     const users = _getUsers()
     const user = users.find(user => user.email === normalizedEmail && user.password === password)
     if (!user) throw new Error('Incorrect email or password')
+
+    return saveLocalUser(user)
+}
+
+async function completeOnboarding() {
+    const loggedinUser = getLoggedinUser()
+    if (!loggedinUser) throw new Error('No logged in user')
+
+    const users = _getUsers()
+    const user = users.find(user => user._id === loggedinUser._id)
+    if (!user) throw new Error('User not found')
+
+    user.onboardingCompleted = true
+    localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users))
 
     return saveLocalUser(user)
 }
