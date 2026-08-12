@@ -12,6 +12,9 @@ export const httpService = {
     put(endpoint, body) {
         return _request('PUT', endpoint, body)
     },
+    delete(endpoint) {
+        return _request('DELETE', endpoint)
+    },
 }
 
 async function _request(method, endpoint, body) {

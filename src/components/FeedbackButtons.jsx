@@ -12,8 +12,10 @@ function ThumbIcon({ isDown = false }) {
     )
 }
 
-// The section decides what its contentIds are. This component only reports a vote on them.
-export function FeedbackButtons({ userId, section, contentIds = [], source, context }) {
+// The section decides what its contentIds are. This component only reports a vote
+// on them, and the server knows who is voting from the login cookie.
+// A section may pass extra snapshot fields, which are stored as they arrive.
+export function FeedbackButtons({ section, contentIds = [], source, context, snapshot }) {
 
     const [vote, setVote] = useState(null)
 
@@ -32,30 +34,30 @@ export function FeedbackButtons({ userId, section, contentIds = [], source, cont
 
         async function loadVote() {
             const ids = contentIdsRef.current
-            if (!userId || !ids.length) return
+            if (!ids.length) return
 
             try {
-                const feedback = await dashboardService.getFeedback(userId, section, ids)
+                const feedback = await dashboardService.getFeedback(section, ids)
                 setVote(feedback?.vote || null)
             } catch (err) {
                 console.error('Loading feedback failed:', err.message)
                 setVote(null)
             }
         }
-    }, [userId, section, contentIdsKey])
+    }, [section, contentIdsKey])
 
     async function onVote(nextVote) {
-        if (!userId || !contentIds.length) return
+        if (!contentIds.length) return
 
         // Clicking the active vote again cancels it
         const isSameVote = vote === nextVote
 
         try {
             if (isSameVote) {
-                await dashboardService.removeFeedback(userId, section, contentIds)
+                await dashboardService.removeFeedback(section, contentIds)
                 setVote(null)
             } else {
-                await dashboardService.saveFeedback({ userId, section, contentIds, source, vote: nextVote, context })
+                await dashboardService.saveFeedback({ section, contentIds, source, vote: nextVote, context, snapshot })
                 setVote(nextVote)
             }
         } catch (err) {
@@ -63,7 +65,7 @@ export function FeedbackButtons({ userId, section, contentIds = [], source, cont
         }
     }
 
-    if (!userId || !contentIds.length) return null
+    if (!contentIds.length) return null
 
     return (
         <div className="feedback-buttons">

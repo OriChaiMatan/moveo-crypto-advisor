@@ -3,7 +3,7 @@ import { dashboardService } from '../services/dashboard.service'
 import { usePointerParallax } from '../hooks/usePointerParallax'
 import { FeedbackButtons } from './FeedbackButtons'
 
-export function AIInsight({ coins = [], investorType = '', contentTypes = [], isCoinsLoading = false, hasCoinsFailed = false, userId = '', context = {}, id }) {
+export function AIInsight({ coins = [], investorType = '', contentTypes = [], isCoinsLoading = false, hasCoinsFailed = false, context = {}, id }) {
 
     const [insight, setInsight] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -131,7 +131,6 @@ export function AIInsight({ coins = [], investorType = '', contentTypes = [], is
                     </footer>
 
                     <FeedbackButtons
-                        userId={userId}
                         section="ai-insight"
                         contentIds={[insight.id]}
                         source={insight.source}

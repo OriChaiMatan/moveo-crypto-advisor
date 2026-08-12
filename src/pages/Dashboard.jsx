@@ -159,7 +159,6 @@ export function Dashboard({ loggedinUser, onLogout }) {
                     </section>
 
                     <CoinData
-                        userId={loggedinUser._id}
                         context={feedbackContext}
                         coins={coins}
                         isLoading={isCoinsLoading}
@@ -180,7 +179,6 @@ export function Dashboard({ loggedinUser, onLogout }) {
                             <MarketNewsList
                                 key={section}
                                 id={section}
-                                userId={loggedinUser._id}
                                 context={feedbackContext}
                                 assets={assets}
                                 investorType={preferences.investorType}
@@ -193,7 +191,6 @@ export function Dashboard({ loggedinUser, onLogout }) {
                             <AIInsight
                                 key={section}
                                 id={section}
-                                userId={loggedinUser._id}
                                 context={feedbackContext}
                                 coins={coins}
                                 investorType={preferences.investorType}
@@ -204,7 +201,7 @@ export function Dashboard({ loggedinUser, onLogout }) {
                         )
                     }
 
-                    return <CryptoMeme key={section} id={section} userId={loggedinUser._id} context={feedbackContext} />
+                    return <CryptoMeme key={section} id={section} context={feedbackContext} />
                 })}
 
             </main>

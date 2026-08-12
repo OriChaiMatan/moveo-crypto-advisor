@@ -35,7 +35,7 @@ function NewsSkeleton() {
     )
 }
 
-export function MarketNewsList({ assets = [], investorType = '', userId = '', context = {}, id }) {
+export function MarketNewsList({ assets = [], investorType = '', context = {}, id }) {
 
     const [news, setNews] = useState([])
     const [newsSource, setNewsSource] = useState('')
@@ -109,7 +109,6 @@ export function MarketNewsList({ assets = [], investorType = '', userId = '', co
                 </ul>
 
                 <FeedbackButtons
-                    userId={userId}
                     section="market-news"
                     contentIds={visibleNews.map(article => article.id)}
                     source={newsSource === 'api' ? 'newsdata' : 'local-fallback'}

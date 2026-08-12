@@ -1,3 +1,4 @@
+import { httpService } from './http.service'
 import { FALLBACK_NEWS } from '../data/news'
 import { ASSETS, getAsset } from '../data/assets'
 import { formatChange } from '../util/util'
@@ -20,10 +21,6 @@ const MAX_COINS = 8
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 const OPENROUTER_MODEL = 'openrouter/free'
 const INSIGHT_STORAGE_KEY = 'cryptoAdvisorDailyInsight'
-const FEEDBACK_STORAGE_KEY = 'userFeedback'
-
-// The four dashboard sections that take feedback
-const FEEDBACK_SECTIONS = ['coin-prices', 'ai-insight', 'market-news', 'crypto-meme']
 
 // The investor type decides what the insight focuses on
 const INVESTOR_FOCUS = {
@@ -580,113 +577,26 @@ function _getFallbackNews(assets) {
 
 /* ---------- Feedback ---------- */
 
-// One record per user + section + content state. Voting on new content adds a new
-// record instead of replacing the old one, so the history stays intact for later use.
-async function getFeedback(userId, section, contentIds) {
-    const contentKey = _getContentKey(contentIds)
-
-    return _getAllFeedback().find(feedback => _isSameContent(feedback, userId, section, contentKey)) || null
+// Feedback lives in the database. The server knows who is asking from the login
+// cookie, so none of these send a user id, and it derives the content key itself.
+async function getFeedback(section, contentIds) {
+    return httpService.get(`/feedback?${_getContentParams(section, contentIds)}`)
 }
 
-async function saveFeedback({ userId, section, contentIds, source, vote, context }) {
-    // The four sections are the whole vocabulary, so an unknown one is a mistake
-    if (!FEEDBACK_SECTIONS.includes(section)) throw new Error(`Unknown feedback section: ${section}`)
-
-    const contentKey = _getContentKey(contentIds)
-    const allFeedback = _getAllFeedback()
-    const now = new Date().toISOString()
-
-    let savedFeedback = allFeedback.find(feedback => _isSameContent(feedback, userId, section, contentKey))
-
-    if (savedFeedback) {
-        savedFeedback.vote = vote
-        savedFeedback.source = source
-        savedFeedback.contentSnapshot = _getContentSnapshot(contentIds, context)
-        savedFeedback.updatedAt = now // createdAt stays as it was
-    } else {
-        savedFeedback = {
-            id: 'fb' + Date.now(),
-            userId,
-            section,
-            contentKey,
-            vote,
-            source,
-            contentSnapshot: _getContentSnapshot(contentIds, context),
-            createdAt: now,
-            updatedAt: now,
-        }
-        allFeedback.push(savedFeedback)
-    }
-
-    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(allFeedback))
-
-    return savedFeedback
+async function saveFeedback({ section, contentIds, source, vote, context, snapshot }) {
+    return httpService.post('/feedback', { section, contentIds, source, vote, context, snapshot })
 }
 
 // Removes the vote on this content state only, never the rest of the history
-async function removeFeedback(userId, section, contentIds) {
-    const contentKey = _getContentKey(contentIds)
-
-    const remainingFeedback = _getAllFeedback()
-        .filter(feedback => !_isSameContent(feedback, userId, section, contentKey))
-
-    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(remainingFeedback))
+async function removeFeedback(section, contentIds) {
+    await httpService.delete(`/feedback?${_getContentParams(section, contentIds)}`)
 }
 
-function _isSameContent(feedback, userId, section, contentKey) {
-    return feedback.userId === userId
-        && feedback.section === section
-        && feedback.contentKey === contentKey
-}
+// The ids are repeated rather than joined into one value, so an id that contains
+// a comma or an ampersand still arrives intact
+function _getContentParams(section, contentIds) {
+    const params = new URLSearchParams({ section })
+    contentIds.forEach(contentId => params.append('contentIds', contentId))
 
-// A short, stable name for one content state. Sorted first, so the same items in a
-// different order stay the same state. The real ids are kept in the snapshot.
-function _getContentKey(contentIds = []) {
-    return _hash([...contentIds].sort().join('|'))
-}
-
-// FNV-1a, 32 bit. Short and deterministic, and needs no library.
-function _hash(text) {
-    let hash = 2166136261
-
-    for (let i = 0; i < text.length; i++) {
-        hash ^= text.charCodeAt(i)
-        hash = Math.imul(hash, 16777619)
-    }
-
-    return (hash >>> 0).toString(36)
-}
-
-// What the user was looking at, copied so later changes never rewrite past feedback
-function _getContentSnapshot(contentIds = [], context = {}) {
-    return {
-        contentIds: [...contentIds],
-        assets: [...(context.assets || [])],
-        investorType: context.investorType || '',
-        contentTypes: [...(context.contentTypes || [])],
-    }
-}
-
-function _getAllFeedback() {
-    try {
-        const allFeedback = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY))
-        if (!Array.isArray(allFeedback)) return []
-
-        return allFeedback.filter(_isValidFeedback)
-    } catch {
-        // A corrupted value is ignored here and overwritten by the next saved vote.
-        // The parse error quotes the stored text, so it is not logged.
-        console.error('Ignoring saved feedback: not valid JSON')
-        return []
-    }
-}
-
-// Records from an older shape have no contentKey and no contentSnapshot, and
-// market-overview is no longer a section. Both are dropped here rather than migrated.
-function _isValidFeedback(feedback) {
-    return !!feedback?.userId
-        && FEEDBACK_SECTIONS.includes(feedback.section)
-        && !!feedback.contentKey
-        && !!feedback.vote
-        && Array.isArray(feedback.contentSnapshot?.contentIds)
+    return params
 }

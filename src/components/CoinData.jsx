@@ -11,6 +11,19 @@ function getDaysSinceStartOfYear() {
     return Math.max(days, 1)
 }
 
+// This section shows a market snapshot, so a vote belongs to one coin on one day.
+// The price moving during the day is still the same thing the user reacted to,
+// but tomorrow's numbers are something new to have an opinion about.
+// The local date is used, so "today" means the same as it does in the greeting
+// and in the daily insight.
+function getTodayKey() {
+    const now = new Date()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+
+    return `${now.getFullYear()}-${month}-${day}`
+}
+
 // The chart shows the year to date, so its direction comes from the history itself,
 // not from the coin's 24 hour change
 function getYtdChange(history) {
@@ -23,7 +36,7 @@ function getYtdChange(history) {
     return ((last - first) / first) * 100
 }
 
-export function CoinData({ coins = [], isLoading = false, hasFailed = false, userId = '', context = {} }) {
+export function CoinData({ coins = [], isLoading = false, hasFailed = false, context = {} }) {
 
     const [activeCoinId, setActiveCoinId] = useState('')
     const [history, setHistory] = useState([])
@@ -186,14 +199,24 @@ export function CoinData({ coins = [], isLoading = false, hasFailed = false, use
                 </div>
             </div>
 
-            {/* The vote belongs to the coin on screen. The full selected set is
-                kept in the snapshot's assets. */}
+            {/* The vote belongs to the coin on screen, on this day. The full
+                selected set is kept in the snapshot's assets, and the numbers the
+                user was looking at are kept alongside them. */}
             <FeedbackButtons
-                userId={userId}
                 section="coin-prices"
-                contentIds={[activeCoin.id]}
+                contentIds={[activeCoin.id, getTodayKey()]}
                 source="coingecko"
                 context={context}
+                snapshot={{
+                    marketData: {
+                        coinId: activeCoin.id,
+                        price: activeCoin.currentPrice,
+                        priceChange24h: activeCoin.priceChange24h,
+                        marketCap: activeCoin.marketCap,
+                        volume24h: activeCoin.volume24h,
+                        ytdChange,
+                    },
+                }}
             />
         </section>
     )
