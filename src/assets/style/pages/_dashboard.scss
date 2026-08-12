@@ -289,12 +289,6 @@ $dashboard-header-height: 61px;
     }
 }
 
-.dashboard .menu-separator {
-    height: 1px;
-    margin: 6px 4px;
-    background-color: $clr-border;
-}
-
 .dashboard .menu-item-logout:hover {
     color: $clr-error-text;
     background-color: rgba($clr-error, 0.12);

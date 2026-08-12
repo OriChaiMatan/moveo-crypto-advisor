@@ -83,9 +83,6 @@ export function DashboardHeader({ userName = '', sections = [], onLogout }) {
 
                     {isMenuOpen && (
                         <div className="account-menu" role="menu">
-                            <button type="button" className="menu-item" role="menuitem">Profile</button>
-                            <button type="button" className="menu-item" role="menuitem">Settings</button>
-                            <div className="menu-separator" role="separator"></div>
                             <button
                                 type="button"
                                 className="menu-item menu-item-logout"
