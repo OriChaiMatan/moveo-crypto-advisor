@@ -58,8 +58,8 @@ All external API calls are made by the backend, so API keys never reach the brow
 
 ```bash
 # clone
-git clone https://github.com/OriChaiMatan/moveo-crypto-advisor.git
-cd moveo-crypto-advisor
+git clone https://github.com/OriChaiMatan/crypto-advisor.git
+cd crypto-advisor
 
 # install dependencies
 npm install
