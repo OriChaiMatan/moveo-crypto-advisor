@@ -1,6 +1,10 @@
 // The one place that knows where the backend is and how to talk to it.
 // Every request sends the login cookie, which the browser holds as HttpOnly.
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
+//
+// In production the same server serves this app and the api, so a relative path
+// reaches it. In development they run on two ports, so the api is named in full.
+const BASE_URL = import.meta.env.VITE_API_URL
+    || (import.meta.env.PROD ? '/api' : 'http://localhost:5001/api')
 
 export const httpService = {
     // The signal lets a caller drop a request that a newer one replaced

@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 import { config } from './config/index.js'
 import { logger } from './services/logger.service.js'
@@ -13,6 +14,10 @@ import { feedbackService } from './api/feedback/feedback.service.js'
 import { dashboardRoutes } from './api/dashboard/dashboard.routes.js'
 import { insightService } from './api/dashboard/insight.service.js'
 
+// The frontend build sits next to the backend folder. The path is worked out from
+// this file, so it does not depend on the folder the server was started from.
+const DIST_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'dist')
+
 const app = express()
 
 app.use(cookieParser())
@@ -20,7 +25,7 @@ app.use(express.json())
 
 if (config.isProduction) {
     // The built frontend is served from this server, so requests are same origin
-    app.use(express.static(path.resolve('public')))
+    app.use(express.static(DIST_DIR))
 } else {
     // The dev server runs on another port, so the browser needs permission to
     // send the login cookie with its requests
@@ -33,8 +38,13 @@ app.use('/api/feedback', feedbackRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 
 if (config.isProduction) {
-    // Any address the frontend router owns is answered with the app itself
-    app.get('/*splat', (req, res) => res.sendFile(path.resolve('public/index.html')))
+    // An api address that matched no route above is an api error. Without this it
+    // would fall through and answer with the react app.
+    app.use('/api', (req, res) => res.status(404).send({ err: 'Not found' }))
+
+    // Every other address belongs to the react router, so it gets the app itself
+    // and the browser finishes the routing
+    app.get('/*splat', (req, res) => res.sendFile(path.join(DIST_DIR, 'index.html')))
 }
 
 // The unique indexes are what guarantee one account per email and one vote per
