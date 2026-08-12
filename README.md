@@ -1,4 +1,4 @@
-# AI Crypto Advisor
+# Crypto Advisor
 
 A personalized crypto investor dashboard: a short onboarding quiz shapes a daily dashboard of coin prices, market news, an AI insight and a crypto meme, and every section can be rated to improve future recommendations.
 
