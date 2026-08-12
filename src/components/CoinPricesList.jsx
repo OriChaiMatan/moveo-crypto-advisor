@@ -1,4 +1,5 @@
 import { CoinPricePreview } from './CoinPricePreview'
+import { FeedbackButtons } from './FeedbackButtons'
 
 function CoinSkeleton() {
     return (
@@ -14,7 +15,7 @@ function CoinSkeleton() {
     )
 }
 
-export function CoinPricesList({ coins = [], isLoading = false, hasFailed = false }) {
+export function CoinPricesList({ coins = [], isLoading = false, hasFailed = false, userId = '', context = {} }) {
 
     return (
         <section className="dashboard-section coin-prices" aria-busy={isLoading}>
@@ -33,6 +34,7 @@ export function CoinPricesList({ coins = [], isLoading = false, hasFailed = fals
             )}
 
             {!isLoading && !hasFailed && !!coins.length && (
+                <>
                 <ul className="coin-strip">
                     {coins.map(coin => (
                         <li key={coin.id}>
@@ -40,6 +42,15 @@ export function CoinPricesList({ coins = [], isLoading = false, hasFailed = fals
                         </li>
                     ))}
                 </ul>
+
+                <FeedbackButtons
+                    userId={userId}
+                    section="market-overview"
+                    contentId={coins.map(coin => coin.id).join(',')}
+                    source="coingecko"
+                    context={context}
+                />
+                </>
             )}
         </section>
     )

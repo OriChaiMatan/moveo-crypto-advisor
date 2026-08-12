@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { dashboardService } from '../services/dashboard.service'
+import { FeedbackButtons } from './FeedbackButtons'
 
 // Days from January 1st of the current year until today
 function getDaysSinceStartOfYear() {
@@ -55,7 +56,7 @@ function getChartPoints(history) {
         .join(' ')
 }
 
-export function CoinData({ coins = [], isLoading = false, hasFailed = false }) {
+export function CoinData({ coins = [], isLoading = false, hasFailed = false, userId = '', context = {} }) {
 
     const [activeCoinId, setActiveCoinId] = useState('')
     const [history, setHistory] = useState([])
@@ -206,6 +207,14 @@ export function CoinData({ coins = [], isLoading = false, hasFailed = false }) {
                     )}
                 </div>
             </div>
+
+            <FeedbackButtons
+                userId={userId}
+                section="coin-prices"
+                contentId={selectedCoins.map(coin => coin.id).join(',')}
+                source="coingecko"
+                context={context}
+            />
         </section>
     )
 }

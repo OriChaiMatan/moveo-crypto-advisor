@@ -1,0 +1,73 @@
+@use '../basic/variables' as *;
+
+// Sits quietly under a section's content
+.feedback-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-sm + 2px;
+    margin-top: $space-lg;
+    padding-top: $space-md;
+    border-top: 1px solid rgba($clr-border, 0.6);
+}
+
+.feedback-label {
+    color: $clr-text-muted;
+    font-size: 11.5px;
+}
+
+.feedback-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.feedback-btn {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    color: $clr-text-muted;
+    background-color: transparent;
+    border: 1px solid $clr-border;
+    border-radius: $radius-sm;
+    transition: color $transition, border-color $transition, background-color $transition;
+
+    &:hover {
+        color: $clr-text;
+        border-color: $clr-text-muted;
+    }
+
+    &.is-active.is-up {
+        color: $clr-success;
+        background-color: rgba($clr-success, 0.12);
+        border-color: rgba($clr-success, 0.45);
+    }
+
+    &.is-active.is-down {
+        color: $clr-error;
+        background-color: rgba($clr-error, 0.12);
+        border-color: rgba($clr-error, 0.45);
+    }
+}
+
+.thumb-icon {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+@media (max-width: $bp-mobile) {
+    .feedback-buttons {
+        margin-top: $space-md;
+        padding-top: $space-sm + 4px;
+    }
+
+    .feedback-btn {
+        width: 34px;
+        height: 34px;
+    }
+}

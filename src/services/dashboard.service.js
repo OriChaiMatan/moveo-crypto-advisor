@@ -55,6 +55,7 @@ const ASSET_COIN_IDS = {
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 const OPENROUTER_MODEL = 'openrouter/free'
 const INSIGHT_STORAGE_KEY = 'cryptoAdvisorDailyInsight'
+const FEEDBACK_STORAGE_KEY = 'userFeedback'
 
 // The investor type decides what the insight focuses on
 const INVESTOR_FOCUS = {
@@ -134,6 +135,9 @@ export const dashboardService = {
     getCoinHistory,
     getInsight,
     getMeme,
+    getFeedback,
+    saveFeedback,
+    removeFeedback,
 }
 
 async function getMeme() {
@@ -190,7 +194,12 @@ async function getInsight(coins = [], investorType = '', contentTypes = []) {
 
     try {
         const insight = await _createInsight(coins, investorType, contentTypes)
-        const insightToSave = { ...insight, contextKey }
+        const insightToSave = {
+            ...insight,
+            contextKey,
+            source: 'openrouter',
+            id: `openrouter|${contextKey}|${insight.createdAt}`,
+        }
         localStorage.setItem(INSIGHT_STORAGE_KEY, JSON.stringify(insightToSave))
 
         return insightToSave
@@ -198,7 +207,7 @@ async function getInsight(coins = [], investorType = '', contentTypes = []) {
         // The local insight is never saved, so the next visit can still reach OpenRouter
         console.log('Using local insight:', err.message)
 
-        const fallbackInsight = _createFallbackInsight(coins)
+        const fallbackInsight = _createFallbackInsight(coins, contextKey)
         if (!fallbackInsight) throw err
 
         return fallbackInsight
@@ -226,7 +235,9 @@ function _getInsightContextKey(coins, investorType, contentTypes) {
 function _getSavedInsight() {
     try {
         const savedInsight = JSON.parse(localStorage.getItem(INSIGHT_STORAGE_KEY))
+        // id and source are required too: an insight saved before they existed is regenerated
         if (!savedInsight?.title || !savedInsight.text || !savedInsight.createdAt || !savedInsight.contextKey) return null
+        if (!savedInsight.id || !savedInsight.source) return null
 
         return savedInsight
     } catch (err) {
@@ -345,7 +356,7 @@ function _formatMarketFacts(facts) {
 }
 
 // Plain factual insight built from the same facts, used when OpenRouter is unavailable
-function _createFallbackInsight(coins) {
+function _createFallbackInsight(coins, contextKey = '') {
     if (!coins.length) return null
 
     const facts = _getMarketFacts(coins)
@@ -367,10 +378,16 @@ function _createFallbackInsight(coins) {
         sentences.push(`Across your ${facts.total} selected assets that is ${_joinParts(counts)} over the last 24 hours.`)
     }
 
+    const now = new Date()
+    const today = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`
+
     return {
         title: 'Today\'s market snapshot',
         text: sentences.join(' '),
-        createdAt: Date.now(),
+        createdAt: now.getTime(),
+        source: 'local-fallback',
+        // Stable for the whole day, so feedback on it survives a reload
+        id: `local-fallback|${contextKey}|${today}`,
     }
 }
 
@@ -593,4 +610,81 @@ function _getFallbackNews(assets) {
     return FALLBACK_NEWS
         .filter(article => !coins.length || article.currencies.some(code => coins.includes(code)))
         .slice(0, MAX_NEWS_ITEMS)
+}
+
+/* ---------- Feedback ---------- */
+
+// One record per user + section + content, so a vote is always an update, never a duplicate
+async function getFeedback(userId, section, contentId) {
+    return _getAllFeedback().find(feedback => _isSameContent(feedback, userId, section, contentId)) || null
+}
+
+async function saveFeedback({ userId, section, contentId, source, vote, context }) {
+    const allFeedback = _getAllFeedback()
+    const now = new Date().toISOString()
+
+    let savedFeedback = allFeedback.find(feedback => _isSameContent(feedback, userId, section, contentId))
+
+    if (savedFeedback) {
+        savedFeedback.vote = vote
+        savedFeedback.source = source
+        savedFeedback.context = _getContextSnapshot(context)
+        savedFeedback.updatedAt = now // createdAt stays as it was
+    } else {
+        savedFeedback = {
+            id: 'fb' + Date.now(),
+            userId,
+            section,
+            contentId,
+            source,
+            vote,
+            context: _getContextSnapshot(context),
+            createdAt: now,
+            updatedAt: now,
+        }
+        allFeedback.push(savedFeedback)
+    }
+
+    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(allFeedback))
+
+    return savedFeedback
+}
+
+async function removeFeedback(userId, section, contentId) {
+    const remainingFeedback = _getAllFeedback()
+        .filter(feedback => !_isSameContent(feedback, userId, section, contentId))
+
+    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(remainingFeedback))
+}
+
+function _isSameContent(feedback, userId, section, contentId) {
+    return feedback.userId === userId
+        && feedback.section === section
+        && feedback.contentId === contentId
+}
+
+// Copies of the preference values, so later changes never rewrite past feedback
+function _getContextSnapshot(context = {}) {
+    return {
+        assets: [...(context.assets || [])],
+        investorType: context.investorType || '',
+        contentTypes: [...(context.contentTypes || [])],
+    }
+}
+
+function _getAllFeedback() {
+    try {
+        const allFeedback = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY))
+        if (!Array.isArray(allFeedback)) return []
+
+        return allFeedback.filter(_isValidFeedback)
+    } catch (err) {
+        // A corrupted value is ignored here and overwritten by the next saved vote
+        console.log('Ignoring saved feedback:', err.message)
+        return []
+    }
+}
+
+function _isValidFeedback(feedback) {
+    return !!feedback?.userId && !!feedback.section && !!feedback.contentId && !!feedback.vote
 }

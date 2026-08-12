@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { dashboardService } from '../services/dashboard.service'
 import { MarketNewsPreview } from './MarketNewsPreview'
+import { FeedbackButtons } from './FeedbackButtons'
 
 function NewsSkeleton() {
     return (
@@ -30,9 +31,10 @@ function NewsSkeleton() {
     )
 }
 
-export function MarketNewsList({ assets = [], investorType = '', isPreferencesLoading = false }) {
+export function MarketNewsList({ assets = [], investorType = '', isPreferencesLoading = false, userId = '', context = {} }) {
 
     const [news, setNews] = useState([])
+    const [newsSource, setNewsSource] = useState('')
     const [isLoading, setIsLoading] = useState(true)
 
     // A plain string keeps the effect from running on every render
@@ -48,8 +50,9 @@ export function MarketNewsList({ assets = [], investorType = '', isPreferencesLo
             setIsLoading(true)
 
             try {
-                const { items } = await dashboardService.getNews(assets, investorType)
+                const { items, source } = await dashboardService.getNews(assets, investorType)
                 setNews(items)
+                setNewsSource(source)
             } catch (err) {
                 console.log('Loading news failed:', err)
                 setNews([])
@@ -84,6 +87,7 @@ export function MarketNewsList({ assets = [], investorType = '', isPreferencesLo
             {!isBusy && !news.length && <p className="news-state">No news to show right now.</p>}
 
             {!isBusy && !!news.length && (
+                <>
                 <ul className="market-news-list">
                     {news.map((article, idx) => (
                         <li className={idx === 0 ? 'news-item is-featured' : 'news-item'} key={article.id}>
@@ -91,6 +95,15 @@ export function MarketNewsList({ assets = [], investorType = '', isPreferencesLo
                         </li>
                     ))}
                 </ul>
+
+                <FeedbackButtons
+                    userId={userId}
+                    section="market-news"
+                    contentId={news.map(article => article.id).join(',')}
+                    source={newsSource === 'api' ? 'newsdata' : 'local-fallback'}
+                    context={context}
+                />
+                </>
             )}
         </section>
     )

@@ -125,6 +125,13 @@ export function Dashboard() {
     // Right after logout there is one render without a user, before the route changes
     if (!loggedinUser) return null
 
+    // Passed to every section so their feedback records share one user and one snapshot
+    const feedbackContext = {
+        assets: preferences?.assets || [],
+        investorType: preferences?.investorType || '',
+        contentTypes: preferences?.contentTypes || [],
+    }
+
     return (
         <div className="dashboard">
 
@@ -212,18 +219,24 @@ export function Dashboard() {
                 </section>
 
                 <CoinPricesList
+                    userId={loggedinUser._id}
+                    context={feedbackContext}
                     coins={coins}
                     isLoading={isCoinsLoading}
                     hasFailed={hasCoinsFailed}
                 />
 
                 <CoinData
+                    userId={loggedinUser._id}
+                    context={feedbackContext}
                     coins={coins}
                     isLoading={isCoinsLoading}
                     hasFailed={hasCoinsFailed}
                 />
 
                 <AIInsight
+                    userId={loggedinUser._id}
+                    context={feedbackContext}
                     coins={coins}
                     investorType={preferences?.investorType || ''}
                     contentTypes={preferences?.contentTypes || []}
@@ -231,12 +244,14 @@ export function Dashboard() {
                 />
 
                 <MarketNewsList
+                    userId={loggedinUser._id}
+                    context={feedbackContext}
                     assets={preferences?.assets || []}
                     investorType={preferences?.investorType || ''}
                     isPreferencesLoading={isPreferencesLoading}
                 />
 
-                <CryptoMeme />
+                <CryptoMeme userId={loggedinUser._id} context={feedbackContext} />
 
             </main>
         </div>

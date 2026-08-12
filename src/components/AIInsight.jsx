@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { dashboardService } from '../services/dashboard.service'
+import { FeedbackButtons } from './FeedbackButtons'
 
-export function AIInsight({ coins = [], investorType = '', contentTypes = [], isCoinsLoading = false }) {
+export function AIInsight({ coins = [], investorType = '', contentTypes = [], isCoinsLoading = false, userId = '', context = {} }) {
 
     const [insight, setInsight] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -135,6 +136,14 @@ export function AIInsight({ coins = [], investorType = '', contentTypes = [], is
                         <span className="footer-dot" aria-hidden="true"></span>
                         Based on {symbols.join(' · ')}
                     </footer>
+
+                    <FeedbackButtons
+                        userId={userId}
+                        section="ai-insight"
+                        contentId={insight.id}
+                        source={insight.source}
+                        context={context}
+                    />
                 </>
             )}
         </section>

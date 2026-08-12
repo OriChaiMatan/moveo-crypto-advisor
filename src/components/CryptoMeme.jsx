@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { dashboardService } from '../services/dashboard.service'
+import { FeedbackButtons } from './FeedbackButtons'
 
-export function CryptoMeme() {
+export function CryptoMeme({ userId = '', context = {} }) {
 
     const [meme, setMeme] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -98,6 +99,14 @@ export function CryptoMeme() {
                                 </a>
                             </div>
                         )}
+
+                        <FeedbackButtons
+                            userId={userId}
+                            section="crypto-meme"
+                            contentId={meme.id}
+                            source={isFromReddit ? 'meme-api' : 'local-fallback'}
+                            context={context}
+                        />
                     </div>
                 </div>
             )}
