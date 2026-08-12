@@ -1,32 +1,10 @@
 import { FALLBACK_NEWS } from '../data/news'
+import { ASSETS, getAsset } from '../data/assets'
+import { formatChange } from '../util/util'
 
 const NEWSDATA_URL = 'https://newsdata.io/api/1/crypto'
 const MAX_NEWS_ITEMS = 6
 const API_PAGE_SIZE = 10 // the free plan rejects anything higher
-
-// Onboarding asset values mapped to NewsData coin codes
-const ASSET_COINS = {
-    bitcoin: 'btc',
-    ethereum: 'eth',
-    solana: 'sol',
-    xrp: 'xrp',
-    bnb: 'bnb',
-    dogecoin: 'doge',
-    cardano: 'ada',
-    avalanche: 'avax',
-}
-
-// NewsData tags articles loosely, so we also look for these terms in the text
-const ASSET_TERMS = {
-    bitcoin: ['btc', 'bitcoin'],
-    ethereum: ['eth', 'ethereum', 'ether'],
-    solana: ['sol', 'solana'],
-    xrp: ['xrp', 'ripple'],
-    bnb: ['bnb', 'binance coin', 'binance'],
-    dogecoin: ['doge', 'dogecoin'],
-    cardano: ['ada', 'cardano'],
-    avalanche: ['avax', 'avalanche'],
-}
 
 // Terms that move an article up the list. 'just-exploring' is missing on purpose,
 // so its feed keeps the original order.
@@ -39,23 +17,13 @@ const INVESTOR_TERMS = {
 const COINGECKO_BASE_URL = 'https://api.coingecko.com/api/v3'
 const MAX_COINS = 8
 
-// Onboarding asset values mapped to CoinGecko coin ids.
-// The fill order below is also the order used when the user picked fewer than eight.
-const ASSET_COIN_IDS = {
-    bitcoin: 'bitcoin',
-    ethereum: 'ethereum',
-    solana: 'solana',
-    xrp: 'ripple',
-    bnb: 'binancecoin',
-    dogecoin: 'dogecoin',
-    cardano: 'cardano',
-    avalanche: 'avalanche-2',
-}
-
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 const OPENROUTER_MODEL = 'openrouter/free'
 const INSIGHT_STORAGE_KEY = 'cryptoAdvisorDailyInsight'
 const FEEDBACK_STORAGE_KEY = 'userFeedback'
+
+// The four dashboard sections that take feedback
+const FEEDBACK_SECTIONS = ['coin-prices', 'ai-insight', 'market-news', 'crypto-meme']
 
 // The investor type decides what the insight focuses on
 const INVESTOR_FOCUS = {
@@ -151,7 +119,7 @@ async function getMeme() {
 
         return meme
     } catch (err) {
-        console.log('Using fallback meme:', err.message)
+        console.error('Using fallback meme:', err.message)
         return _getFallbackMeme()
     }
 }
@@ -205,7 +173,7 @@ async function getInsight(coins = [], investorType = '', contentTypes = []) {
         return insightToSave
     } catch (err) {
         // The local insight is never saved, so the next visit can still reach OpenRouter
-        console.log('Using local insight:', err.message)
+        console.error('Using local insight:', err.message)
 
         const fallbackInsight = _createFallbackInsight(coins, contextKey)
         if (!fallbackInsight) throw err
@@ -240,9 +208,10 @@ function _getSavedInsight() {
         if (!savedInsight.id || !savedInsight.source) return null
 
         return savedInsight
-    } catch (err) {
-        // A corrupted value is ignored here and overwritten by the next generated insight
-        console.log('Ignoring saved insight:', err.message)
+    } catch {
+        // A corrupted value is ignored here and overwritten by the next generated insight.
+        // The parse error quotes the stored text, so it is not logged.
+        console.error('Ignoring saved insight: not valid JSON')
         return null
     }
 }
@@ -318,10 +287,6 @@ function _changeOf(coin) {
     return coin.priceChange24h ?? 0
 }
 
-function _formatChange(change) {
-    return `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`
-}
-
 // The one place the comparisons are calculated. The prompt and the local
 // fallback insight both build on this, so the numbers can never disagree.
 function _getMarketFacts(coins) {
@@ -345,8 +310,8 @@ function _formatMarketFacts(facts) {
     const lines = []
 
     if (facts.total > 1) {
-        lines.push(`Strongest 24 hour performer: ${facts.strongest.symbol} (${_formatChange(_changeOf(facts.strongest))})`)
-        lines.push(`Weakest 24 hour performer: ${facts.weakest.symbol} (${_formatChange(_changeOf(facts.weakest))})`)
+        lines.push(`Strongest 24 hour performer: ${facts.strongest.symbol} (${formatChange(_changeOf(facts.strongest))})`)
+        lines.push(`Weakest 24 hour performer: ${facts.weakest.symbol} (${formatChange(_changeOf(facts.weakest))})`)
     }
     lines.push(`Assets up over 24 hours: ${facts.up} of ${facts.total}`)
     lines.push(`Assets down over 24 hours: ${facts.down} of ${facts.total}`)
@@ -369,7 +334,7 @@ function _createFallbackInsight(coins, contextKey = '') {
     } else if (strongestChange === weakestChange) {
         sentences.push(`All ${facts.total} of your selected assets are ${_describeMove(strongestChange)} over the last 24 hours.`)
     } else {
-        sentences.push(`${facts.strongest.symbol} is the strongest performer among your selected assets at ${_formatChange(strongestChange)}, while ${facts.weakest.symbol} is the weakest at ${_formatChange(weakestChange)}.`)
+        sentences.push(`${facts.strongest.symbol} is the strongest performer among your selected assets at ${formatChange(strongestChange)}, while ${facts.weakest.symbol} is the weakest at ${formatChange(weakestChange)}.`)
 
         const counts = []
         if (facts.up) counts.push(`${facts.up} up`)
@@ -392,7 +357,7 @@ function _createFallbackInsight(coins, contextKey = '') {
 }
 
 function _describeMove(change) {
-    if (change > 0) return `up ${_formatChange(change).slice(1)}`
+    if (change > 0) return `up ${formatChange(change).slice(1)}`
     if (change < 0) return `down ${Math.abs(change).toFixed(2)}%`
     return 'unchanged'
 }
@@ -462,8 +427,9 @@ async function getCoinHistory(coinId, days, signal) {
 }
 
 async function getCoinData(assets = []) {
-    const selectedIds = assets.map(asset => ASSET_COIN_IDS[asset]).filter(Boolean)
-    const fillIds = Object.values(ASSET_COIN_IDS).filter(id => !selectedIds.includes(id))
+    const selectedIds = assets.map(asset => getAsset(asset)?.coinGeckoId).filter(Boolean)
+    // The catalogue order decides which coins fill the rest of the row
+    const fillIds = ASSETS.map(asset => asset.coinGeckoId).filter(id => !selectedIds.includes(id))
     const coinIds = [...selectedIds, ...fillIds].slice(0, MAX_COINS)
 
     const params = new URLSearchParams({
@@ -516,7 +482,7 @@ async function getNews(assets = [], investorType = '') {
 
 // Returns an empty array on any problem, so the caller can fall back
 async function _getNewsFromApi(assets) {
-    const coins = assets.map(asset => ASSET_COINS[asset]).filter(Boolean)
+    const coins = assets.map(asset => getAsset(asset)?.newsCode).filter(Boolean)
     if (!coins.length) return []
 
     try {
@@ -537,7 +503,7 @@ async function _getNewsFromApi(assets) {
         return _cleanApiPosts(data.results || [], assets)
     } catch (err) {
         // The message never contains the request url, so the key stays out of the log
-        console.log('Loading live news failed:', err.message)
+        console.error('Loading live news failed:', err.message)
         return []
     }
 }
@@ -578,11 +544,11 @@ function _withRelevantAssets(article, assets) {
     const matchedAssets = assets.filter(asset => _mentionsAsset(text, asset))
     if (!matchedAssets.length) return null
 
-    return { ...article, currencies: matchedAssets.map(asset => ASSET_COINS[asset].toUpperCase()) }
+    return { ...article, currencies: matchedAssets.map(asset => getAsset(asset).newsCode.toUpperCase()) }
 }
 
 function _mentionsAsset(text, asset) {
-    const terms = ASSET_TERMS[asset] || []
+    const terms = getAsset(asset)?.searchTerms || []
     return terms.some(term => new RegExp(`\\b${term}\\b`, 'i').test(text))
 }
 
@@ -605,7 +571,7 @@ function _prioritizeByInvestorType(articles, investorType) {
 }
 
 function _getFallbackNews(assets) {
-    const coins = assets.map(asset => ASSET_COINS[asset]?.toUpperCase()).filter(Boolean)
+    const coins = assets.map(asset => getAsset(asset)?.newsCode.toUpperCase()).filter(Boolean)
 
     return FALLBACK_NEWS
         .filter(article => !coins.length || article.currencies.some(code => coins.includes(code)))
@@ -614,31 +580,38 @@ function _getFallbackNews(assets) {
 
 /* ---------- Feedback ---------- */
 
-// One record per user + section + content, so a vote is always an update, never a duplicate
-async function getFeedback(userId, section, contentId) {
-    return _getAllFeedback().find(feedback => _isSameContent(feedback, userId, section, contentId)) || null
+// One record per user + section + content state. Voting on new content adds a new
+// record instead of replacing the old one, so the history stays intact for later use.
+async function getFeedback(userId, section, contentIds) {
+    const contentKey = _getContentKey(contentIds)
+
+    return _getAllFeedback().find(feedback => _isSameContent(feedback, userId, section, contentKey)) || null
 }
 
-async function saveFeedback({ userId, section, contentId, source, vote, context }) {
+async function saveFeedback({ userId, section, contentIds, source, vote, context }) {
+    // The four sections are the whole vocabulary, so an unknown one is a mistake
+    if (!FEEDBACK_SECTIONS.includes(section)) throw new Error(`Unknown feedback section: ${section}`)
+
+    const contentKey = _getContentKey(contentIds)
     const allFeedback = _getAllFeedback()
     const now = new Date().toISOString()
 
-    let savedFeedback = allFeedback.find(feedback => _isSameContent(feedback, userId, section, contentId))
+    let savedFeedback = allFeedback.find(feedback => _isSameContent(feedback, userId, section, contentKey))
 
     if (savedFeedback) {
         savedFeedback.vote = vote
         savedFeedback.source = source
-        savedFeedback.context = _getContextSnapshot(context)
+        savedFeedback.contentSnapshot = _getContentSnapshot(contentIds, context)
         savedFeedback.updatedAt = now // createdAt stays as it was
     } else {
         savedFeedback = {
             id: 'fb' + Date.now(),
             userId,
             section,
-            contentId,
-            source,
+            contentKey,
             vote,
-            context: _getContextSnapshot(context),
+            source,
+            contentSnapshot: _getContentSnapshot(contentIds, context),
             createdAt: now,
             updatedAt: now,
         }
@@ -650,22 +623,44 @@ async function saveFeedback({ userId, section, contentId, source, vote, context 
     return savedFeedback
 }
 
-async function removeFeedback(userId, section, contentId) {
+// Removes the vote on this content state only, never the rest of the history
+async function removeFeedback(userId, section, contentIds) {
+    const contentKey = _getContentKey(contentIds)
+
     const remainingFeedback = _getAllFeedback()
-        .filter(feedback => !_isSameContent(feedback, userId, section, contentId))
+        .filter(feedback => !_isSameContent(feedback, userId, section, contentKey))
 
     localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(remainingFeedback))
 }
 
-function _isSameContent(feedback, userId, section, contentId) {
+function _isSameContent(feedback, userId, section, contentKey) {
     return feedback.userId === userId
         && feedback.section === section
-        && feedback.contentId === contentId
+        && feedback.contentKey === contentKey
 }
 
-// Copies of the preference values, so later changes never rewrite past feedback
-function _getContextSnapshot(context = {}) {
+// A short, stable name for one content state. Sorted first, so the same items in a
+// different order stay the same state. The real ids are kept in the snapshot.
+function _getContentKey(contentIds = []) {
+    return _hash([...contentIds].sort().join('|'))
+}
+
+// FNV-1a, 32 bit. Short and deterministic, and needs no library.
+function _hash(text) {
+    let hash = 2166136261
+
+    for (let i = 0; i < text.length; i++) {
+        hash ^= text.charCodeAt(i)
+        hash = Math.imul(hash, 16777619)
+    }
+
+    return (hash >>> 0).toString(36)
+}
+
+// What the user was looking at, copied so later changes never rewrite past feedback
+function _getContentSnapshot(contentIds = [], context = {}) {
     return {
+        contentIds: [...contentIds],
         assets: [...(context.assets || [])],
         investorType: context.investorType || '',
         contentTypes: [...(context.contentTypes || [])],
@@ -678,13 +673,20 @@ function _getAllFeedback() {
         if (!Array.isArray(allFeedback)) return []
 
         return allFeedback.filter(_isValidFeedback)
-    } catch (err) {
-        // A corrupted value is ignored here and overwritten by the next saved vote
-        console.log('Ignoring saved feedback:', err.message)
+    } catch {
+        // A corrupted value is ignored here and overwritten by the next saved vote.
+        // The parse error quotes the stored text, so it is not logged.
+        console.error('Ignoring saved feedback: not valid JSON')
         return []
     }
 }
 
+// Records from an older shape have no contentKey and no contentSnapshot, and
+// market-overview is no longer a section. Both are dropped here rather than migrated.
 function _isValidFeedback(feedback) {
-    return !!feedback?.userId && !!feedback.section && !!feedback.contentId && !!feedback.vote
+    return !!feedback?.userId
+        && FEEDBACK_SECTIONS.includes(feedback.section)
+        && !!feedback.contentKey
+        && !!feedback.vote
+        && Array.isArray(feedback.contentSnapshot?.contentIds)
 }

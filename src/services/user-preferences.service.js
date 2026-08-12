@@ -43,5 +43,17 @@ async function getPreferences(userId) {
 }
 
 function _getAllPreferences() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY_PREFERENCES)) || []
+    try {
+        const allPreferences = JSON.parse(localStorage.getItem(STORAGE_KEY_PREFERENCES))
+        if (!Array.isArray(allPreferences)) {
+            // Nothing stored yet is the normal state before onboarding, and stays quiet
+            if (allPreferences !== null) console.error('Ignoring stored preferences: expected an array')
+            return []
+        }
+
+        return allPreferences
+    } catch {
+        console.error('Ignoring stored preferences: not valid JSON')
+        return []
+    }
 }

@@ -272,16 +272,6 @@
         border-color: rgba($clr-error, 0.35);
     }
 
-    &.success {
-        color: $clr-success-text;
-        background-color: rgba($clr-success, 0.12);
-        border-color: rgba($clr-success, 0.35);
-    }
-}
-
-// The success message lives outside the form, so it needs its own spacing
-.login-signup .auth-form + .auth-msg {
-    margin-top: $space-md;
 }
 
 .login-signup .auth-switch {

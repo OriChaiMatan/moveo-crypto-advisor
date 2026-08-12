@@ -1,5 +1,4 @@
 import { CoinPricePreview } from './CoinPricePreview'
-import { FeedbackButtons } from './FeedbackButtons'
 
 function CoinSkeleton() {
     return (
@@ -15,7 +14,8 @@ function CoinSkeleton() {
     )
 }
 
-export function CoinPricesList({ coins = [], isLoading = false, hasFailed = false, userId = '', context = {} }) {
+// Market Overview is context for the dashboard, not a feedback target of its own
+export function CoinPricesList({ coins = [], isLoading = false, hasFailed = false }) {
 
     return (
         <section className="dashboard-section coin-prices" aria-busy={isLoading}>
@@ -54,14 +54,6 @@ export function CoinPricesList({ coins = [], isLoading = false, hasFailed = fals
                     </div>
                 </div>
             )}
-
-            <FeedbackButtons
-                userId={userId}
-                section="market-overview"
-                contentId={coins.map(coin => coin.id).join(',')}
-                source="coingecko"
-                context={context}
-            />
         </section>
     )
 }

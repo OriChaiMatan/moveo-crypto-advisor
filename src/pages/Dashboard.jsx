@@ -1,39 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { userService } from '../services/user.service'
 import { userPreferencesService } from '../services/user-preferences.service'
 import { dashboardService } from '../services/dashboard.service'
+import { DashboardHeader } from '../components/DashboardHeader'
 import { CoinPricesList } from '../components/CoinPricesList'
 import { CoinData } from '../components/CoinData'
 import { AIInsight } from '../components/AIInsight'
 import { MarketNewsList } from '../components/MarketNewsList'
 import { CryptoMeme } from '../components/CryptoMeme'
-
-// Readable labels for the values saved during onboarding
-const ASSET_LABELS = {
-    bitcoin: 'BTC',
-    ethereum: 'ETH',
-    solana: 'SOL',
-    xrp: 'XRP',
-    bnb: 'BNB',
-    dogecoin: 'DOGE',
-    cardano: 'ADA',
-    avalanche: 'AVAX',
-}
-
-const INVESTOR_TYPE_LABELS = {
-    'hodler': 'HODLer',
-    'day-trader': 'Day Trader',
-    'nft-collector': 'NFT Collector',
-    'just-exploring': 'Just Exploring',
-}
-
-const CONTENT_TYPE_LABELS = {
-    'market-news': 'Market News',
-    'charts': 'Charts',
-    'social': 'Social',
-    'fun': 'Fun',
-}
+import { getAsset } from '../data/assets'
+import { getInvestorType, getContentType } from '../data/preferences'
+import { usePointerParallax } from '../hooks/usePointerParallax'
 
 // One place defining the dashboard sections, their order and their shortcut labels
 const SECTION_BY_CONTENT_TYPE = {
@@ -72,37 +49,36 @@ function getGreeting() {
 export function Dashboard() {
 
     const loggedinUser = userService.getLoggedinUser()
+    // Read from storage on every render, so the object is new each time. The effect
+    // below depends on this plain id instead, which stays the same between renders.
+    const userId = loggedinUser?._id
 
-    const [isMenuOpen, setIsMenuOpen] = useState(false)
-    const [isNavOpen, setIsNavOpen] = useState(false)
     const [preferences, setPreferences] = useState(null)
     const [isPreferencesLoading, setIsPreferencesLoading] = useState(true)
     const [coins, setCoins] = useState([])
     const [isCoinsLoading, setIsCoinsLoading] = useState(true)
     const [hasCoinsFailed, setHasCoinsFailed] = useState(false)
-    const accountRef = useRef(null)
-    const navRef = useRef(null)
     const coinsLayerRef = useRef(null)
-    const heroBoundsRef = useRef(null) // cached on enter, so mousemove does no layout reads
 
-    const navigate = useNavigate()
+    // The floating coins follow the pointer across the hero, through CSS variables only
+    const heroParallax = usePointerParallax(coinsLayerRef)
 
     useEffect(() => {
         loadPreferences()
 
         async function loadPreferences() {
-            if (!loggedinUser) return
+            if (!userId) return
 
             try {
-                const userPreferences = await userPreferencesService.getPreferences(loggedinUser._id)
+                const userPreferences = await userPreferencesService.getPreferences(userId)
                 setPreferences(userPreferences)
             } catch (err) {
-                console.log('Loading preferences failed:', err)
+                console.error('Loading preferences failed:', err.message)
             } finally {
                 setIsPreferencesLoading(false)
             }
         }
-    }, [])
+    }, [userId])
 
     // Coin data is loaded once here, so several sections can share it
     useEffect(() => {
@@ -118,7 +94,7 @@ export function Dashboard() {
                 const coinData = await dashboardService.getCoinData(preferences?.assets || [])
                 setCoins(coinData)
             } catch (err) {
-                console.log('Loading coin prices failed:', err.message)
+                console.error('Loading coin prices failed:', err.message)
                 setCoins([])
                 setHasCoinsFailed(true)
             } finally {
@@ -127,82 +103,12 @@ export function Dashboard() {
         }
     }, [isPreferencesLoading])
 
-    useEffect(() => {
-        if (!isNavOpen) return
-
-        function handleClickOutside(ev) {
-            if (navRef.current && !navRef.current.contains(ev.target)) setIsNavOpen(false)
-        }
-
-        function handleEscapeKeyPress(ev) {
-            if (ev.key === 'Escape') setIsNavOpen(false)
-        }
-
-        document.addEventListener('mousedown', handleClickOutside)
-        document.addEventListener('keydown', handleEscapeKeyPress)
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside)
-            document.removeEventListener('keydown', handleEscapeKeyPress)
-        }
-    }, [isNavOpen])
-
-    useEffect(() => {
-        if (!isMenuOpen) return
-
-        function handleClickOutside(ev) {
-            if (accountRef.current && !accountRef.current.contains(ev.target)) setIsMenuOpen(false)
-        }
-
-        function handleEscapeKeyPress(ev) {
-            if (ev.key === 'Escape') setIsMenuOpen(false)
-        }
-
-        document.addEventListener('mousedown', handleClickOutside)
-        document.addEventListener('keydown', handleEscapeKeyPress)
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside)
-            document.removeEventListener('keydown', handleEscapeKeyPress)
-        }
-    }, [isMenuOpen])
-
-    // Pointer position goes straight into CSS variables, so the floating coins never re-render.
-    // CSS decides how far each depth layer moves, and ignores it on mobile and with reduced motion.
-    function onHeroPointerEnter(ev) {
-        heroBoundsRef.current = ev.currentTarget.getBoundingClientRect()
-    }
-
-    function onHeroPointerMove(ev) {
-        const bounds = heroBoundsRef.current
-        if (!bounds || !coinsLayerRef.current) return
-
-        const x = (ev.clientX - bounds.left) / bounds.width - 0.5
-        const y = (ev.clientY - bounds.top) / bounds.height - 0.5
-
-        coinsLayerRef.current.style.setProperty('--pointer-x', x.toFixed(3))
-        coinsLayerRef.current.style.setProperty('--pointer-y', y.toFixed(3))
-    }
-
-    function onHeroPointerLeave() {
-        heroBoundsRef.current = null
-        if (!coinsLayerRef.current) return
-
-        coinsLayerRef.current.style.setProperty('--pointer-x', '0')
-        coinsLayerRef.current.style.setProperty('--pointer-y', '0')
-    }
-
-    async function onLogout() {
-        setIsMenuOpen(false)
-        await userService.logout()
-        navigate('/login')
-    }
-
     // Right after logout there is one render without a user, before the route changes
     if (!loggedinUser) return null
 
     // The same order drives the header shortcuts and the rendered sections
     const sectionOrder = getSectionOrder(preferences?.contentTypes)
+    const headerSections = sectionOrder.map(section => ({ id: section, label: SECTION_LABELS[section] }))
 
     // Decorative only: the coin images already in the shared data, selected assets first
     const floatingCoins = [
@@ -220,103 +126,13 @@ export function Dashboard() {
     return (
         <div className="dashboard">
 
-            <header className="dashboard-header">
-                <div className="dashboard-header-inner">
-                    <div className="brand">
-                        <span className="brand-mark" aria-hidden="true">
-                            <svg viewBox="0 0 24 24">
-                                <polyline points="3,16 9,10 13,13 21,5" />
-                            </svg>
-                        </span>
-                        <span className="brand-name">Crypto Advisor</span>
-                    </div>
-
-                    <nav className="header-nav" aria-label="Dashboard sections">
-                        {sectionOrder.map(section => (
-                            <a href={`#${section}`} key={section}>{SECTION_LABELS[section]}</a>
-                        ))}
-                    </nav>
-
-                    <div className="header-actions">
-                    <div className="header-nav-mobile" ref={navRef}>
-                        <button
-                            type="button"
-                            className="nav-toggle"
-                            onClick={() => setIsNavOpen(prevIsOpen => !prevIsOpen)}
-                            aria-haspopup="menu"
-                            aria-expanded={isNavOpen}
-                            aria-label="Dashboard sections"
-                        >
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M4 7h16" />
-                                <path d="M4 12h16" />
-                                <path d="M4 17h16" />
-                            </svg>
-                        </button>
-
-                        {isNavOpen && (
-                            <div className="nav-menu" role="menu">
-                                {sectionOrder.map(section => (
-                                    <a
-                                        href={`#${section}`}
-                                        key={section}
-                                        role="menuitem"
-                                        onClick={() => setIsNavOpen(false)}
-                                    >
-                                        {SECTION_LABELS[section]}
-                                    </a>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="header-account" ref={accountRef}>
-                        <button
-                            type="button"
-                            className="account-trigger"
-                            onClick={() => setIsMenuOpen(prevIsOpen => !prevIsOpen)}
-                            aria-haspopup="menu"
-                            aria-expanded={isMenuOpen}
-                        >
-                            <span className="account-avatar" aria-hidden="true">
-                                {loggedinUser.name.charAt(0).toUpperCase()}
-                            </span>
-                            <span className="account-name">{loggedinUser.name}</span>
-                            <svg className="account-chevron" viewBox="0 0 24 24" aria-hidden="true">
-                                <polyline points="6,9 12,15 18,9" />
-                            </svg>
-                        </button>
-
-                        {isMenuOpen && (
-                            <div className="account-menu" role="menu">
-                                <button type="button" className="menu-item" role="menuitem">Profile</button>
-                                <button type="button" className="menu-item" role="menuitem">Settings</button>
-                                <div className="menu-separator" role="separator"></div>
-                                <button
-                                    type="button"
-                                    className="menu-item menu-item-logout"
-                                    role="menuitem"
-                                    onClick={onLogout}
-                                >
-                                    Log out
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                    </div>
-                </div>
-            </header>
+            <DashboardHeader userName={loggedinUser.name} sections={headerSections} />
 
             <main className="dashboard-main">
 
                 <div className="dashboard-stage">
                 <div className="dashboard-hero">
-                    <section
-                        className="dashboard-intro"
-                        onMouseEnter={onHeroPointerEnter}
-                        onMouseMove={onHeroPointerMove}
-                        onMouseLeave={onHeroPointerLeave}
-                    >
+                    <section className="dashboard-intro" {...heroParallax}>
 
                         <p className="intro-greeting">{getGreeting()}, {loggedinUser.name.split(' ')[0]}</p>
                         <h1>Your market, personalized for you.</h1>
@@ -329,21 +145,21 @@ export function Dashboard() {
                                 <div className="tag-group">
                                     {preferences.assets.map(asset => (
                                         <span className="tag tag-asset" key={asset}>
-                                            {ASSET_LABELS[asset] || asset}
+                                            {getAsset(asset)?.symbol || asset}
                                         </span>
                                     ))}
                                 </div>
 
                                 <div className="tag-group">
                                     <span className="tag tag-investor">
-                                        {INVESTOR_TYPE_LABELS[preferences.investorType] || preferences.investorType}
+                                        {getInvestorType(preferences.investorType)?.label || preferences.investorType}
                                     </span>
                                 </div>
 
                                 <div className="tag-group">
                                     {preferences.contentTypes.map(contentType => (
                                         <span className="tag" key={contentType}>
-                                            {CONTENT_TYPE_LABELS[contentType] || contentType}
+                                            {getContentType(contentType)?.label || contentType}
                                         </span>
                                     ))}
                                 </div>
@@ -379,8 +195,6 @@ export function Dashboard() {
                 </div>
 
                 <CoinPricesList
-                    userId={loggedinUser._id}
-                    context={feedbackContext}
                     coins={coins}
                     isLoading={isCoinsLoading}
                     hasFailed={hasCoinsFailed}
@@ -413,6 +227,7 @@ export function Dashboard() {
                                 investorType={preferences?.investorType || ''}
                                 contentTypes={preferences?.contentTypes || []}
                                 isCoinsLoading={isCoinsLoading}
+                                hasCoinsFailed={hasCoinsFailed}
                             />
                         )
                     }

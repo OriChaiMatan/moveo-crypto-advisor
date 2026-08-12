@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { dashboardService } from '../services/dashboard.service'
+import { formatPrice, formatCompactPrice, formatChange, getChartPoints } from '../util/util'
 import { FeedbackButtons } from './FeedbackButtons'
 
 // Days from January 1st of the current year until today
@@ -8,34 +9,6 @@ function getDaysSinceStartOfYear() {
     const startOfYear = new Date(now.getFullYear(), 0, 1)
     const days = Math.ceil((now - startOfYear) / (1000 * 60 * 60 * 24))
     return Math.max(days, 1)
-}
-
-function formatPrice(price) {
-    if (typeof price !== 'number') return '—'
-
-    const digits = price >= 1 ? 2 : 5
-    return price.toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: digits,
-        maximumFractionDigits: digits,
-    })
-}
-
-function formatCompact(value) {
-    if (typeof value !== 'number') return '—'
-
-    return value.toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        notation: 'compact',
-        maximumFractionDigits: 2,
-    })
-}
-
-function formatChange(change) {
-    if (typeof change !== 'number') return '—'
-    return `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`
 }
 
 // The chart shows the year to date, so its direction comes from the history itself,
@@ -48,24 +21,6 @@ function getYtdChange(history) {
     if (!first) return null
 
     return ((last - first) / first) * 100
-}
-
-// Turns the price history into points inside a 600x200 viewBox
-function getChartPoints(history) {
-    if (history.length < 2) return ''
-
-    const prices = history.map(point => point.price)
-    const min = Math.min(...prices)
-    const max = Math.max(...prices)
-    const range = max - min || 1
-
-    return prices
-        .map((price, idx) => {
-            const x = (idx / (prices.length - 1)) * 600
-            const y = 190 - ((price - min) / range) * 180
-            return `${x.toFixed(2)},${y.toFixed(2)}`
-        })
-        .join(' ')
 }
 
 export function CoinData({ coins = [], isLoading = false, hasFailed = false, userId = '', context = {} }) {
@@ -99,7 +54,7 @@ export function CoinData({ coins = [], isLoading = false, hasFailed = false, use
                 // A newer coin or range replaced this request, so its result is dropped
                 if (err.name === 'AbortError') return
 
-                console.log('Loading coin history failed:', err.message)
+                console.error('Loading coin history failed:', err.message)
                 setHistory([])
                 setHasHistoryFailed(true)
             } finally {
@@ -142,7 +97,8 @@ export function CoinData({ coins = [], isLoading = false, hasFailed = false, use
     }
 
     const isUp = activeCoin.priceChange24h >= 0
-    const points = getChartPoints(history)
+    // Matches the 600x200 viewBox on the svg below
+    const points = getChartPoints(history.map(point => point.price), 600, 200, 10)
 
     const ytdChange = getYtdChange(history)
     const ytdDirection = ytdChange === null || ytdChange === 0
@@ -194,11 +150,11 @@ export function CoinData({ coins = [], isLoading = false, hasFailed = false, use
                 <dl className="coin-stats">
                     <div className="stat">
                         <dt>Market cap</dt>
-                        <dd>{formatCompact(activeCoin.marketCap)}</dd>
+                        <dd>{formatCompactPrice(activeCoin.marketCap)}</dd>
                     </div>
                     <div className="stat">
                         <dt>24h volume</dt>
-                        <dd>{formatCompact(activeCoin.volume24h)}</dd>
+                        <dd>{formatCompactPrice(activeCoin.volume24h)}</dd>
                     </div>
                 </dl>
 
@@ -230,10 +186,12 @@ export function CoinData({ coins = [], isLoading = false, hasFailed = false, use
                 </div>
             </div>
 
+            {/* The vote belongs to the coin on screen. The full selected set is
+                kept in the snapshot's assets. */}
             <FeedbackButtons
                 userId={userId}
                 section="coin-prices"
-                contentId={selectedCoins.map(coin => coin.id).join(',')}
+                contentIds={[activeCoin.id]}
                 source="coingecko"
                 context={context}
             />
@@ -246,7 +204,7 @@ function CoinDataHeader() {
         <header className="coin-data-header">
             <span className="header-accent" aria-hidden="true"></span>
             <div>
-                <h2>Your Assets</h2>
+                <h2>Coin Prices</h2>
                 <p className="header-subtitle">A closer look at the coins you follow</p>
             </div>
         </header>

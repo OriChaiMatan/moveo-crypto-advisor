@@ -6,7 +6,6 @@ export const userService = {
     login,
     logout,
     getLoggedinUser,
-    saveLocalUser,
     completeOnboarding,
 }
 
@@ -36,7 +35,7 @@ async function signup(userCred) {
     users.push(user)
     localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users))
 
-    return saveLocalUser(user)
+    return _saveLocalUser(user)
 }
 
 async function login(userCred) {
@@ -50,7 +49,7 @@ async function login(userCred) {
     const user = users.find(user => user.email === normalizedEmail && user.password === password)
     if (!user) throw new Error('Incorrect email or password')
 
-    return saveLocalUser(user)
+    return _saveLocalUser(user)
 }
 
 async function completeOnboarding() {
@@ -64,18 +63,33 @@ async function completeOnboarding() {
     user.onboardingCompleted = true
     localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users))
 
-    return saveLocalUser(user)
+    return _saveLocalUser(user)
 }
 
 async function logout() {
     sessionStorage.removeItem(STORAGE_KEY_LOGGEDIN_USER)
 }
 
+// Read during render, so a corrupted value must return null instead of throwing
 function getLoggedinUser() {
-    return JSON.parse(sessionStorage.getItem(STORAGE_KEY_LOGGEDIN_USER))
+    try {
+        const loggedinUser = JSON.parse(sessionStorage.getItem(STORAGE_KEY_LOGGEDIN_USER))
+        // Nothing stored is the normal logged out state, and stays quiet
+        if (loggedinUser === null) return null
+
+        if (typeof loggedinUser !== 'object' || Array.isArray(loggedinUser)) {
+            console.error('Ignoring stored logged in user: expected an object')
+            return null
+        }
+
+        return loggedinUser
+    } catch {
+        console.error('Ignoring stored logged in user: not valid JSON')
+        return null
+    }
 }
 
-function saveLocalUser(user) {
+function _saveLocalUser(user) {
     const userToSave = {
         _id: user._id,
         name: user.name,
@@ -87,5 +101,18 @@ function saveLocalUser(user) {
 }
 
 function _getUsers() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY_USERS)) || []
+    try {
+        const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS))
+        if (!Array.isArray(users)) {
+            // Nothing stored yet is the normal first visit, and stays quiet
+            if (users !== null) console.error('Ignoring stored users: expected an array')
+            return []
+        }
+
+        return users
+    } catch {
+        // The parse error quotes the stored text, which holds passwords, so it is not logged
+        console.error('Ignoring stored users: not valid JSON')
+        return []
+    }
 }

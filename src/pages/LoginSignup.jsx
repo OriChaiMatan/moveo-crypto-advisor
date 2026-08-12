@@ -113,7 +113,6 @@ export function LoginSignup() {
     const [errorMsg, setErrorMsg] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [isPasswordShown, setIsPasswordShown] = useState(false)
-    const [loggedinUser, setLoggedinUser] = useState(userService.getLoggedinUser())
 
     const navigate = useNavigate()
 
@@ -140,11 +139,10 @@ export function LoginSignup() {
             const user = isSignup
                 ? await userService.signup(credentials)
                 : await userService.login(credentials)
-            setLoggedinUser(user)
             setCredentials({ name: '', email: '', password: '' })
             navigate(user.onboardingCompleted ? '/dashboard' : '/onboarding')
         } catch (err) {
-            console.log('Authentication failed:', err)
+            console.error('Authentication failed:', err.message)
             setErrorMsg(err.message)
         } finally {
             setIsLoading(false)
@@ -282,10 +280,6 @@ export function LoginSignup() {
                                 : isSignup ? 'Create account' : 'Log in'}
                         </button>
                     </form>
-
-                    {loggedinUser && (
-                        <p className="auth-msg success">Logged in as {loggedinUser.name}</p>
-                    )}
 
                     <p className="auth-switch">
                         {isSignup ? 'Already have an account?' : 'New to Crypto Advisor?'}

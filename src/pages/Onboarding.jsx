@@ -2,80 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { userService } from '../services/user.service'
 import { userPreferencesService } from '../services/user-preferences.service'
-
-// Every icon is a list of paths drawn in the same 24x24 box, so they stay consistent
-const ASSET_OPTIONS = [
-    {
-        value: 'bitcoin', label: 'Bitcoin', symbol: 'BTC',
-        icon: ['M9.5 7v10', 'M9.5 7h4.5a2.5 2.5 0 0 1 0 5h-4.5', 'M9.5 12h5a2.5 2.5 0 0 1 0 5h-5', 'M12 5v2', 'M12 17v2'],
-    },
-    {
-        value: 'ethereum', label: 'Ethereum', symbol: 'ETH',
-        icon: ['M12 4l5.5 8L12 15 6.5 12z', 'M6.5 13.5L12 20l5.5-6.5'],
-    },
-    {
-        value: 'solana', label: 'Solana', symbol: 'SOL',
-        icon: ['M7.5 8.5h9', 'M6.5 12h9', 'M7.5 15.5h9'],
-    },
-    {
-        value: 'xrp', label: 'XRP', symbol: 'XRP',
-        icon: ['M7 6l5 5 5-5', 'M7 18l5-5 5 5'],
-    },
-    {
-        value: 'bnb', label: 'BNB', symbol: 'BNB',
-        icon: ['M12 4.5l3 3-3 3-3-3z', 'M12 13.5l3 3-3 3-3-3z', 'M7.5 9l3 3-3 3-3-3z', 'M16.5 9l3 3-3 3-3-3z'],
-    },
-    {
-        value: 'dogecoin', label: 'Dogecoin', symbol: 'DOGE',
-        icon: ['M9.5 7v10', 'M9.5 7h3a5 5 0 0 1 0 10h-3', 'M7.5 12h5'],
-    },
-    {
-        value: 'cardano', label: 'Cardano', symbol: 'ADA',
-        icon: ['M8.5 17.5L12 6.5l3.5 11', 'M10 14h4'],
-    },
-    {
-        value: 'avalanche', label: 'Avalanche', symbol: 'AVAX',
-        icon: ['M12 5.5L19 18H5z'],
-    },
-]
-
-const INVESTOR_TYPE_OPTIONS = [
-    {
-        value: 'hodler', label: 'HODLer', description: 'In it for the long run',
-        icon: ['M12 4l6 2.5v5c0 4-2.6 6.6-6 8-3.4-1.4-6-4-6-8v-5z'],
-    },
-    {
-        value: 'day-trader', label: 'Day Trader', description: 'Following the market daily',
-        icon: ['M8 5v14', 'M6.5 8.5h3v6h-3z', 'M16 5v14', 'M14.5 10h3v5h-3z'],
-    },
-    {
-        value: 'nft-collector', label: 'NFT Collector', description: 'Collecting and following drops',
-        icon: ['M4.5 5.5h15v13h-15z', 'M4.5 15l4-3.5 3.5 3 3-2.5 4 3.5', 'M9 9.5h.01'],
-    },
-    {
-        value: 'just-exploring', label: 'Just Exploring', description: 'Still learning how it all works',
-        icon: ['M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16', 'M14.5 9.5l-1.5 5-5 1.5 1.5-5z'],
-    },
-]
-
-const CONTENT_TYPE_OPTIONS = [
-    {
-        value: 'market-news', label: 'Market News',
-        icon: ['M4.5 6.5h12v12h-12z', 'M16.5 9.5h3v7a2 2 0 0 1-2 2h-1', 'M7 9.5h7', 'M7 12.5h7', 'M7 15.5h4'],
-    },
-    {
-        value: 'charts', label: 'Charts',
-        icon: ['M4.5 19.5h15', 'M7.5 16.5v-5', 'M12 16.5v-9', 'M16.5 16.5v-7'],
-    },
-    {
-        value: 'social', label: 'Social',
-        icon: ['M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6', 'M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5', 'M16 6.5a3 3 0 0 1 0 5.8', 'M17 14.6c2 .7 3.5 2.3 3.5 4.4'],
-    },
-    {
-        value: 'fun', label: 'Fun',
-        icon: ['M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16', 'M9 10h.01', 'M15 10h.01', 'M8.5 14a4.5 4.5 0 0 0 7 0'],
-    },
-]
+import { ASSETS } from '../data/assets'
+import { INVESTOR_TYPES, CONTENT_TYPES } from '../data/preferences'
 
 function OptionIcon({ paths, className = '' }) {
     return (
@@ -152,7 +80,7 @@ export function Onboarding() {
             await userService.completeOnboarding()
             navigate('/')
         } catch (err) {
-            console.log('Saving preferences failed:', err)
+            console.error('Saving preferences failed:', err.message)
             setErrorMsg(err.message)
         } finally {
             setIsLoading(false)
@@ -197,7 +125,7 @@ export function Onboarding() {
                                 <p className="step-hint">Select all that apply.</p>
 
                                 <div className="options options-assets">
-                                    {ASSET_OPTIONS.map(option => (
+                                    {ASSETS.map(option => (
                                         <label className="option option-chip" key={option.value}>
                                             <input
                                                 className="option-input"
@@ -227,7 +155,7 @@ export function Onboarding() {
                                 <p className="step-hint">Pick the one that fits you best.</p>
 
                                 <div className="options options-investor">
-                                    {INVESTOR_TYPE_OPTIONS.map(option => (
+                                    {INVESTOR_TYPES.map(option => (
                                         <label className="option option-card" key={option.value}>
                                             <input
                                                 className="option-input"
@@ -256,7 +184,7 @@ export function Onboarding() {
                                 <p className="step-hint">Select all that apply.</p>
 
                                 <div className="options options-content">
-                                    {CONTENT_TYPE_OPTIONS.map(option => (
+                                    {CONTENT_TYPES.map(option => (
                                         <label className="option option-card" key={option.value}>
                                             <input
                                                 className="option-input"

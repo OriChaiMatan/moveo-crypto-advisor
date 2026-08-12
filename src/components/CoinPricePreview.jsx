@@ -1,43 +1,11 @@
-function formatPrice(price) {
-    if (typeof price !== 'number') return '—'
-
-    // Small prices such as DOGE need more decimals than BTC
-    const digits = price >= 1 ? 2 : 5
-    return price.toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: digits,
-        maximumFractionDigits: digits,
-    })
-}
-
-function formatChange(change) {
-    if (typeof change !== 'number') return '—'
-    return `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`
-}
-
-// Turns the price history into points inside a 100x36 viewBox
-function getSparklinePoints(prices) {
-    if (prices.length < 2) return ''
-
-    const min = Math.min(...prices)
-    const max = Math.max(...prices)
-    const range = max - min || 1
-
-    return prices
-        .map((price, idx) => {
-            const x = (idx / (prices.length - 1)) * 100
-            const y = 33 - ((price - min) / range) * 30
-            return `${x.toFixed(2)},${y.toFixed(2)}`
-        })
-        .join(' ')
-}
+import { formatPrice, formatChange, getChartPoints } from '../util/util'
 
 export function CoinPricePreview({ coin }) {
 
     const { symbol, name, image, currentPrice, priceChange24h, sparkline, isSelected } = coin
     const isUp = priceChange24h >= 0
-    const points = getSparklinePoints(sparkline)
+    // Matches the 100x36 viewBox on the sparkline below
+    const points = getChartPoints(sparkline, 100, 36, 3)
 
     return (
         <article className={`coin-card ${isSelected ? 'is-selected' : ''}`}>

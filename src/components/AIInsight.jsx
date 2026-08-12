@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { dashboardService } from '../services/dashboard.service'
+import { usePointerParallax } from '../hooks/usePointerParallax'
 import { FeedbackButtons } from './FeedbackButtons'
 
-export function AIInsight({ coins = [], investorType = '', contentTypes = [], isCoinsLoading = false, userId = '', context = {}, id }) {
+export function AIInsight({ coins = [], investorType = '', contentTypes = [], isCoinsLoading = false, hasCoinsFailed = false, userId = '', context = {}, id }) {
 
     const [insight, setInsight] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const [hasFailed, setHasFailed] = useState(false)
     const sparkRef = useRef(null)
-    const boundsRef = useRef(null) // cached on enter, so mousemove does no layout reads
+
+    // The sparks drift with the pointer across the section, through CSS variables only
+    const sparkParallax = usePointerParallax(sparkRef)
 
     // Only the user's own assets are sent to the model
     const selectedCoins = coins.filter(coin => coin.isSelected)
@@ -19,7 +22,17 @@ export function AIInsight({ coins = [], investorType = '', contentTypes = [], is
     const contentTypesKey = contentTypes.join(',')
 
     useEffect(() => {
-        if (isCoinsLoading || !selectedCoins.length) return
+        // The coins are still on their way, so the shared loading flag covers this render
+        if (isCoinsLoading) return
+
+        // Nothing to write an insight from, either because the coins failed
+        // or because no asset was selected. Stop loading so the state below can show.
+        if (!selectedCoins.length) {
+            setInsight(null)
+            setHasFailed(false)
+            setIsLoading(false)
+            return
+        }
 
         loadInsight()
 
@@ -31,7 +44,7 @@ export function AIInsight({ coins = [], investorType = '', contentTypes = [], is
                 const dailyInsight = await dashboardService.getInsight(selectedCoins, investorType, contentTypes)
                 setInsight(dailyInsight)
             } catch (err) {
-                console.log('Loading AI insight failed:', err.message)
+                console.error('Loading AI insight failed:', err.message)
                 setInsight(null)
                 setHasFailed(true)
             } finally {
@@ -42,39 +55,12 @@ export function AIInsight({ coins = [], investorType = '', contentTypes = [], is
 
     const isBusy = isCoinsLoading || isLoading
 
-    // Pointer position is written straight to CSS variables, so moving the mouse never re-renders.
-    // CSS decides how far each spark moves, and ignores the values on mobile and with reduced motion.
-    function onPointerEnter(ev) {
-        boundsRef.current = ev.currentTarget.getBoundingClientRect()
-    }
-
-    function onPointerMove(ev) {
-        const bounds = boundsRef.current
-        if (!bounds || !sparkRef.current) return
-
-        const x = (ev.clientX - bounds.left) / bounds.width - 0.5
-        const y = (ev.clientY - bounds.top) / bounds.height - 0.5
-
-        sparkRef.current.style.setProperty('--pointer-x', x.toFixed(3))
-        sparkRef.current.style.setProperty('--pointer-y', y.toFixed(3))
-    }
-
-    function onPointerLeave() {
-        boundsRef.current = null
-        if (!sparkRef.current) return
-
-        sparkRef.current.style.setProperty('--pointer-x', '0')
-        sparkRef.current.style.setProperty('--pointer-y', '0')
-    }
-
     return (
         <section
             className="dashboard-section ai-insight"
             id={id}
             aria-busy={isBusy}
-            onMouseEnter={onPointerEnter}
-            onMouseMove={onPointerMove}
-            onMouseLeave={onPointerLeave}
+            {...sparkParallax}
         >
             <header className="ai-insight-header">
                 <div className="header-identity">
@@ -119,7 +105,11 @@ export function AIInsight({ coins = [], investorType = '', contentTypes = [], is
                 </div>
             )}
 
-            {!isBusy && !selectedCoins.length && (
+            {!isBusy && hasCoinsFailed && (
+                <p className="insight-state">Market data is unavailable right now, so there is no insight today.</p>
+            )}
+
+            {!isBusy && !hasCoinsFailed && !selectedCoins.length && (
                 <p className="insight-state">Pick some assets during onboarding to get your daily insight.</p>
             )}
 
@@ -143,7 +133,7 @@ export function AIInsight({ coins = [], investorType = '', contentTypes = [], is
                     <FeedbackButtons
                         userId={userId}
                         section="ai-insight"
-                        contentId={insight.id}
+                        contentIds={[insight.id]}
                         source={insight.source}
                         context={context}
                     />

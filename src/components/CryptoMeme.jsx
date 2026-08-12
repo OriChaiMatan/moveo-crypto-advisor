@@ -19,7 +19,7 @@ export function CryptoMeme({ userId = '', context = {}, id }) {
                 const dailyMeme = await dashboardService.getMeme()
                 setMeme(dailyMeme)
             } catch (err) {
-                console.log('Loading meme failed:', err.message)
+                console.error('Loading meme failed:', err.message)
                 setMeme(null)
             } finally {
                 setIsLoading(false)
@@ -114,7 +114,7 @@ export function CryptoMeme({ userId = '', context = {}, id }) {
                         <FeedbackButtons
                             userId={userId}
                             section="crypto-meme"
-                            contentId={meme.id}
+                            contentIds={[meme.id]}
                             source={isFromReddit ? 'meme-api' : 'local-fallback'}
                             context={context}
                         />

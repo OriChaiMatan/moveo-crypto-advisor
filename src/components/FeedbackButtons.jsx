@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { dashboardService } from '../services/dashboard.service'
 
 function ThumbIcon({ isDown = false }) {
@@ -12,46 +12,58 @@ function ThumbIcon({ isDown = false }) {
     )
 }
 
-export function FeedbackButtons({ userId, section, contentId, source, context }) {
+// The section decides what its contentIds are. This component only reports a vote on them.
+export function FeedbackButtons({ userId, section, contentIds = [], source, context }) {
 
     const [vote, setVote] = useState(null)
 
+    // The parent builds a new array on every render, so a plain string decides
+    // when the content actually changed. The ids themselves are read through a
+    // ref, which keeps the array identity out of the effect's dependencies.
+    const contentIdsKey = contentIds.join(',')
+    const contentIdsRef = useRef(contentIds)
+    contentIdsRef.current = contentIds
+
     useEffect(() => {
+        // Different content means a different vote, so the previous one is cleared first
+        setVote(null)
+
         loadVote()
 
         async function loadVote() {
-            if (!userId || !contentId) return
+            const ids = contentIdsRef.current
+            if (!userId || !ids.length) return
 
             try {
-                const feedback = await dashboardService.getFeedback(userId, section, contentId)
+                const feedback = await dashboardService.getFeedback(userId, section, ids)
                 setVote(feedback?.vote || null)
             } catch (err) {
-                console.log('Loading feedback failed:', err.message)
+                console.error('Loading feedback failed:', err.message)
                 setVote(null)
             }
         }
-    }, [userId, section, contentId])
+    }, [userId, section, contentIdsKey])
 
     async function onVote(nextVote) {
-        if (!userId || !contentId) return
+        if (!userId || !contentIds.length) return
 
         // Clicking the active vote again cancels it
         const isSameVote = vote === nextVote
 
         try {
             if (isSameVote) {
-                await dashboardService.removeFeedback(userId, section, contentId)
+                await dashboardService.removeFeedback(userId, section, contentIds)
                 setVote(null)
             } else {
-                await dashboardService.saveFeedback({ userId, section, contentId, source, vote: nextVote, context })
+                await dashboardService.saveFeedback({ userId, section, contentIds, source, vote: nextVote, context })
                 setVote(nextVote)
             }
         } catch (err) {
-            console.log('Saving feedback failed:', err.message)
+            console.error('Saving feedback failed:', err.message)
         }
     }
 
-    if (!userId || !contentId) return null
+    if (!userId || !contentIds.length) return null
 
     return (
         <div className="feedback-buttons">
