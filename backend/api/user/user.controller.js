@@ -9,8 +9,11 @@ const VALID_INVESTOR_TYPES = ['hodler', 'day-trader', 'nft-collector', 'just-exp
 const VALID_CONTENT_TYPES = ['market-news', 'charts', 'social', 'fun']
 
 // The client only ever asks for itself, so the id comes from the verified
-// token rather than from the request
+// token rather than from the request. A visitor with no session is not an error:
+// they get 200 and null, so a normal logged out start makes no failed request.
 export async function getLoggedinUser(req, res) {
+    if (!req.loggedinUser) return res.json(null)
+
     try {
         const user = await userService.getById(req.loggedinUser._id)
         if (!user) return res.status(404).send({ err: 'User not found' })

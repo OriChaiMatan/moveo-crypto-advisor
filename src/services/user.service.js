@@ -21,13 +21,8 @@ async function logout() {
     await httpService.post('/auth/logout')
 }
 
-// Returns null when there is no session. Being logged out is a normal answer
-// here, not a failure, so only real problems are passed on to the caller.
+// Returns the logged in user, or null when nobody is logged in. The server
+// answers both with 200, so only a real problem reaches the caller.
 async function getLoggedinUser() {
-    try {
-        return await httpService.get('/user')
-    } catch (err) {
-        if (err.status === 401) return null
-        throw err
-    }
+    return httpService.get('/user')
 }
