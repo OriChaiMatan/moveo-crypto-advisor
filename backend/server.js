@@ -10,6 +10,8 @@ import { userRoutes } from './api/user/user.routes.js'
 import { userService } from './api/user/user.service.js'
 import { feedbackRoutes } from './api/feedback/feedback.routes.js'
 import { feedbackService } from './api/feedback/feedback.service.js'
+import { dashboardRoutes } from './api/dashboard/dashboard.routes.js'
+import { insightService } from './api/dashboard/insight.service.js'
 
 const app = express()
 
@@ -28,6 +30,7 @@ if (config.isProduction) {
 app.use('/api/auth', authRoutes)
 app.use('/api/user', userRoutes)
 app.use('/api/feedback', feedbackRoutes)
+app.use('/api/dashboard', dashboardRoutes)
 
 if (config.isProduction) {
     // Any address the frontend router owns is answered with the app itself
@@ -42,6 +45,7 @@ async function startServer() {
     try {
         await userService.createIndexes()
         await feedbackService.createIndexes()
+        await insightService.createIndexes()
 
         app.listen(config.port, () => {
             logger.info(`Server listening on port ${config.port} in ${config.isProduction ? 'production' : 'development'} mode`)

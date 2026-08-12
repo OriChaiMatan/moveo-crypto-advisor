@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { dashboardService } from '../services/dashboard.service'
+import { getTodayKey } from '../util/util'
 import { usePointerParallax } from '../hooks/usePointerParallax'
 import { FeedbackButtons } from './FeedbackButtons'
 
@@ -41,7 +42,7 @@ export function AIInsight({ coins = [], investorType = '', contentTypes = [], is
             setHasFailed(false)
 
             try {
-                const dailyInsight = await dashboardService.getInsight(selectedCoins, investorType, contentTypes)
+                const dailyInsight = await dashboardService.getInsight(getTodayKey())
                 setInsight(dailyInsight)
             } catch (err) {
                 console.error('Loading AI insight failed:', err.message)

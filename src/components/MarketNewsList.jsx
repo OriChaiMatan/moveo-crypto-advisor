@@ -41,8 +41,9 @@ export function MarketNewsList({ assets = [], investorType = '', context = {}, i
     const [newsSource, setNewsSource] = useState('')
     const [isLoading, setIsLoading] = useState(true)
 
-    // The assets come from the logged in user, so this array only changes when
-    // the user's preferences do
+    // The server reads the assets and the investor type from the logged in user.
+    // They are still props here, as the signal to load the feed again when the
+    // user's preferences change.
     useEffect(() => {
         loadNews()
 
@@ -50,7 +51,7 @@ export function MarketNewsList({ assets = [], investorType = '', context = {}, i
             setIsLoading(true)
 
             try {
-                const { items, source } = await dashboardService.getNews(assets, investorType)
+                const { items, source } = await dashboardService.getNews()
                 setNews(items)
                 setNewsSource(source)
             } catch (err) {

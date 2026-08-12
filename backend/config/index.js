@@ -15,6 +15,11 @@ export const config = {
     dbName: process.env.DB_NAME || 'crypto-advisor',
     jwtSecret: process.env.JWT_SECRET,
     cookieName: 'loginToken',
+    // Third party keys. None is required to boot: every section has a fallback,
+    // so a missing key degrades one section instead of stopping the server.
+    coinGeckoApiKey: process.env.COINGECKO_API_KEY,
+    newsDataApiKey: process.env.NEWSDATA_API_KEY,
+    openRouterApiKey: process.env.OPENROUTER_API_KEY,
 }
 
 // Missing secrets fail here rather than as a confusing error on the first

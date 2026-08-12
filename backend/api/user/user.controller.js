@@ -1,10 +1,10 @@
 import { userService } from './user.service.js'
 import { logger } from '../../services/logger.service.js'
+import { ASSET_VALUES } from '../../data/assets.js'
 
-// The answers onboarding is allowed to send. They mirror the values in the
-// client's data folder, and are repeated here on purpose: the api cannot trust
-// the client to send only what its own screens offer.
-const VALID_ASSETS = ['bitcoin', 'ethereum', 'solana', 'xrp', 'bnb', 'dogecoin', 'cardano', 'avalanche']
+// The answers onboarding is allowed to send. The assets come from the server's
+// own catalogue, the rest are listed here: the api cannot trust the client to
+// send only what its own screens offer.
 const VALID_INVESTOR_TYPES = ['hodler', 'day-trader', 'nft-collector', 'just-exploring']
 const VALID_CONTENT_TYPES = ['market-news', 'charts', 'social', 'fun']
 
@@ -42,7 +42,7 @@ export async function updatePreferences(req, res) {
 // Returns a message the client can show, or null when the body is fine
 function _getValidationError({ assets, investorType, contentTypes } = {}) {
     if (!Array.isArray(assets) || !assets.length) return 'Please select at least one asset'
-    if (assets.some(asset => !VALID_ASSETS.includes(asset))) return 'One of the selected assets is not supported'
+    if (assets.some(asset => !ASSET_VALUES.includes(asset))) return 'One of the selected assets is not supported'
 
     if (typeof investorType !== 'string') return 'Please select an investor type'
     if (!VALID_INVESTOR_TYPES.includes(investorType)) return 'The selected investor type is not supported'

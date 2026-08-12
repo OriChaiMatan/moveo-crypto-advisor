@@ -59,8 +59,9 @@ export function Dashboard({ loggedinUser, onLogout }) {
     const { preferences } = loggedinUser
     const { assets } = preferences
 
-    // Coin data is loaded once here, so several sections can share it. The assets
-    // array belongs to the user held by the app, so it only changes when they do.
+    // Coin data is loaded once here, so several sections can share it. The server
+    // picks the coins from the stored preferences, so the assets are only a
+    // dependency: a change to them means the row has to be loaded again.
     useEffect(() => {
         loadCoins()
 
@@ -69,7 +70,7 @@ export function Dashboard({ loggedinUser, onLogout }) {
             setHasCoinsFailed(false)
 
             try {
-                const coinData = await dashboardService.getCoinData(assets)
+                const coinData = await dashboardService.getCoinData()
                 setCoins(coinData)
             } catch (err) {
                 console.error('Loading coin prices failed:', err.message)

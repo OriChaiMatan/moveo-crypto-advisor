@@ -52,3 +52,13 @@ export function getChartPoints(values, width, height, padding = 0) {
         })
         .join(' ')
 }
+
+// The browser's calendar day, as YYYY-MM-DD. Daily behaviour follows the day the
+// user is actually having, which only the browser knows.
+export function getTodayKey() {
+    const now = new Date()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+
+    return `${now.getFullYear()}-${month}-${day}`
+}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { dashboardService } from '../services/dashboard.service'
-import { formatPrice, formatCompactPrice, formatChange, getChartPoints } from '../util/util'
+import { formatPrice, formatCompactPrice, formatChange, getChartPoints, getTodayKey } from '../util/util'
 import { FeedbackButtons } from './FeedbackButtons'
 
 // Days from January 1st of the current year until today
@@ -9,19 +9,6 @@ function getDaysSinceStartOfYear() {
     const startOfYear = new Date(now.getFullYear(), 0, 1)
     const days = Math.ceil((now - startOfYear) / (1000 * 60 * 60 * 24))
     return Math.max(days, 1)
-}
-
-// This section shows a market snapshot, so a vote belongs to one coin on one day.
-// The price moving during the day is still the same thing the user reacted to,
-// but tomorrow's numbers are something new to have an opinion about.
-// The local date is used, so "today" means the same as it does in the greeting
-// and in the daily insight.
-function getTodayKey() {
-    const now = new Date()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const day = String(now.getDate()).padStart(2, '0')
-
-    return `${now.getFullYear()}-${month}-${day}`
 }
 
 // The chart shows the year to date, so its direction comes from the history itself,

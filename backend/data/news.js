@@ -1,4 +1,5 @@
 // Local news used when the live API has nothing usable to show.
+// Served by the dashboard api, never by the browser.
 // Everything here is fictional: made up headlines, descriptions and sources.
 // The list is ordered from newest to oldest.
 

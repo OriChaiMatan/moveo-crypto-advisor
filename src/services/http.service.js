@@ -3,8 +3,9 @@
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
 
 export const httpService = {
-    get(endpoint) {
-        return _request('GET', endpoint)
+    // The signal lets a caller drop a request that a newer one replaced
+    get(endpoint, signal) {
+        return _request('GET', endpoint, undefined, signal)
     },
     post(endpoint, body) {
         return _request('POST', endpoint, body)
@@ -17,12 +18,13 @@ export const httpService = {
     },
 }
 
-async function _request(method, endpoint, body) {
+async function _request(method, endpoint, body, signal) {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
         method,
         credentials: 'include', // without this the browser leaves the cookie behind
         headers: body ? { 'Content-Type': 'application/json' } : undefined,
         body: body ? JSON.stringify(body) : undefined,
+        signal,
     })
 
     const data = await _readBody(res)
