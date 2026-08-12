@@ -1,27 +1,17 @@
 import { useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { userService } from '../services/user.service'
 import { useOutsideClick } from '../hooks/useOutsideClick'
 
 // The header owns only its own two dropdowns. The sections it links to are
-// decided by the page, so the same order drives the shortcuts and the content.
-export function DashboardHeader({ userName = '', sections = [] }) {
+// decided by the page, and logging out is the app's business, not the header's.
+export function DashboardHeader({ userName = '', sections = [], onLogout }) {
 
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isNavOpen, setIsNavOpen] = useState(false)
     const accountRef = useRef(null)
     const navRef = useRef(null)
 
-    const navigate = useNavigate()
-
     useOutsideClick(navRef, isNavOpen, () => setIsNavOpen(false))
     useOutsideClick(accountRef, isMenuOpen, () => setIsMenuOpen(false))
-
-    async function onLogout() {
-        setIsMenuOpen(false)
-        await userService.logout()
-        navigate('/login')
-    }
 
     return (
         <header className="dashboard-header">

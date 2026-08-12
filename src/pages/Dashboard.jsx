@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { userService } from '../services/user.service'
-import { userPreferencesService } from '../services/user-preferences.service'
 import { dashboardService } from '../services/dashboard.service'
 import { DashboardHeader } from '../components/DashboardHeader'
 import { CoinPricesList } from '../components/CoinPricesList'
@@ -46,15 +44,8 @@ function getGreeting() {
     return 'Good evening'
 }
 
-export function Dashboard() {
+export function Dashboard({ loggedinUser, onLogout }) {
 
-    const loggedinUser = userService.getLoggedinUser()
-    // Read from storage on every render, so the object is new each time. The effect
-    // below depends on this plain id instead, which stays the same between renders.
-    const userId = loggedinUser?._id
-
-    const [preferences, setPreferences] = useState(null)
-    const [isPreferencesLoading, setIsPreferencesLoading] = useState(true)
     const [coins, setCoins] = useState([])
     const [isCoinsLoading, setIsCoinsLoading] = useState(true)
     const [hasCoinsFailed, setHasCoinsFailed] = useState(false)
@@ -63,27 +54,14 @@ export function Dashboard() {
     // The floating coins follow the pointer across the hero, through CSS variables only
     const heroParallax = usePointerParallax(coinsLayerRef)
 
+    // The preferences arrive with the logged in user, so there is nothing to fetch
+    // and nothing to keep in a second piece of state
+    const { preferences } = loggedinUser
+    const { assets } = preferences
+
+    // Coin data is loaded once here, so several sections can share it. The assets
+    // array belongs to the user held by the app, so it only changes when they do.
     useEffect(() => {
-        loadPreferences()
-
-        async function loadPreferences() {
-            if (!userId) return
-
-            try {
-                const userPreferences = await userPreferencesService.getPreferences(userId)
-                setPreferences(userPreferences)
-            } catch (err) {
-                console.error('Loading preferences failed:', err.message)
-            } finally {
-                setIsPreferencesLoading(false)
-            }
-        }
-    }, [userId])
-
-    // Coin data is loaded once here, so several sections can share it
-    useEffect(() => {
-        if (isPreferencesLoading) return
-
         loadCoins()
 
         async function loadCoins() {
@@ -91,7 +69,7 @@ export function Dashboard() {
             setHasCoinsFailed(false)
 
             try {
-                const coinData = await dashboardService.getCoinData(preferences?.assets || [])
+                const coinData = await dashboardService.getCoinData(assets)
                 setCoins(coinData)
             } catch (err) {
                 console.error('Loading coin prices failed:', err.message)
@@ -101,13 +79,10 @@ export function Dashboard() {
                 setIsCoinsLoading(false)
             }
         }
-    }, [isPreferencesLoading])
-
-    // Right after logout there is one render without a user, before the route changes
-    if (!loggedinUser) return null
+    }, [assets])
 
     // The same order drives the header shortcuts and the rendered sections
-    const sectionOrder = getSectionOrder(preferences?.contentTypes)
+    const sectionOrder = getSectionOrder(preferences.contentTypes)
     const headerSections = sectionOrder.map(section => ({ id: section, label: SECTION_LABELS[section] }))
 
     // Decorative only: the coin images already in the shared data, selected assets first
@@ -118,15 +93,15 @@ export function Dashboard() {
 
     // Passed to every section so their feedback records share one user and one snapshot
     const feedbackContext = {
-        assets: preferences?.assets || [],
-        investorType: preferences?.investorType || '',
-        contentTypes: preferences?.contentTypes || [],
+        assets: preferences.assets,
+        investorType: preferences.investorType,
+        contentTypes: preferences.contentTypes,
     }
 
     return (
         <div className="dashboard">
 
-            <DashboardHeader userName={loggedinUser.name} sections={headerSections} />
+            <DashboardHeader userName={loggedinUser.name} sections={headerSections} onLogout={onLogout} />
 
             <main className="dashboard-main">
 
@@ -140,31 +115,29 @@ export function Dashboard() {
                             Prices, news and AI insights based on the assets and interests you selected.
                         </p>
 
-                        {preferences && (
-                            <div className="intro-tags">
-                                <div className="tag-group">
-                                    {preferences.assets.map(asset => (
-                                        <span className="tag tag-asset" key={asset}>
-                                            {getAsset(asset)?.symbol || asset}
-                                        </span>
-                                    ))}
-                                </div>
-
-                                <div className="tag-group">
-                                    <span className="tag tag-investor">
-                                        {getInvestorType(preferences.investorType)?.label || preferences.investorType}
+                        <div className="intro-tags">
+                            <div className="tag-group">
+                                {preferences.assets.map(asset => (
+                                    <span className="tag tag-asset" key={asset}>
+                                        {getAsset(asset)?.symbol || asset}
                                     </span>
-                                </div>
-
-                                <div className="tag-group">
-                                    {preferences.contentTypes.map(contentType => (
-                                        <span className="tag" key={contentType}>
-                                            {getContentType(contentType)?.label || contentType}
-                                        </span>
-                                    ))}
-                                </div>
+                                ))}
                             </div>
-                        )}
+
+                            <div className="tag-group">
+                                <span className="tag tag-investor">
+                                    {getInvestorType(preferences.investorType)?.label || preferences.investorType}
+                                </span>
+                            </div>
+
+                            <div className="tag-group">
+                                {preferences.contentTypes.map(contentType => (
+                                    <span className="tag" key={contentType}>
+                                        {getContentType(contentType)?.label || contentType}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
 
                         {/* Decorative only: fills the empty area under the intro text */}
                         <div className="intro-coins" ref={coinsLayerRef} aria-hidden="true">
@@ -209,9 +182,8 @@ export function Dashboard() {
                                 id={section}
                                 userId={loggedinUser._id}
                                 context={feedbackContext}
-                                assets={preferences?.assets || []}
-                                investorType={preferences?.investorType || ''}
-                                isPreferencesLoading={isPreferencesLoading}
+                                assets={assets}
+                                investorType={preferences.investorType}
                             />
                         )
                     }
@@ -224,8 +196,8 @@ export function Dashboard() {
                                 userId={loggedinUser._id}
                                 context={feedbackContext}
                                 coins={coins}
-                                investorType={preferences?.investorType || ''}
-                                contentTypes={preferences?.contentTypes || []}
+                                investorType={preferences.investorType}
+                                contentTypes={preferences.contentTypes}
                                 isCoinsLoading={isCoinsLoading}
                                 hasCoinsFailed={hasCoinsFailed}
                             />

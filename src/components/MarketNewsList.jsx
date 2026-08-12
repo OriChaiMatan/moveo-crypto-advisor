@@ -35,19 +35,15 @@ function NewsSkeleton() {
     )
 }
 
-export function MarketNewsList({ assets = [], investorType = '', isPreferencesLoading = false, userId = '', context = {}, id }) {
+export function MarketNewsList({ assets = [], investorType = '', userId = '', context = {}, id }) {
 
     const [news, setNews] = useState([])
     const [newsSource, setNewsSource] = useState('')
     const [isLoading, setIsLoading] = useState(true)
 
-    // A plain string keeps the effect from running on every render
-    const assetsKey = assets.join(',')
-
+    // The assets come from the logged in user, so this array only changes when
+    // the user's preferences do
     useEffect(() => {
-        // Waiting for the real assets, so no unpersonalized request is made
-        if (isPreferencesLoading) return
-
         loadNews()
 
         async function loadNews() {
@@ -64,13 +60,12 @@ export function MarketNewsList({ assets = [], investorType = '', isPreferencesLo
                 setIsLoading(false)
             }
         }
-    }, [assetsKey, investorType, isPreferencesLoading])
+    }, [assets, investorType])
 
-    const isBusy = isPreferencesLoading || isLoading
     const visibleNews = news.slice(0, VISIBLE_NEWS_ITEMS)
 
     return (
-        <section className="dashboard-section market-news" id={id} aria-busy={isBusy}>
+        <section className="dashboard-section market-news" id={id} aria-busy={isLoading}>
             <header className="market-news-header">
                 <span className="header-accent" aria-hidden="true"></span>
 
@@ -99,11 +94,11 @@ export function MarketNewsList({ assets = [], investorType = '', isPreferencesLo
                 </div>
             </header>
 
-            {isBusy && <NewsSkeleton />}
+            {isLoading && <NewsSkeleton />}
 
-            {!isBusy && !visibleNews.length && <p className="news-state">No news to show right now.</p>}
+            {!isLoading && !visibleNews.length && <p className="news-state">No news to show right now.</p>}
 
-            {!isBusy && !!visibleNews.length && (
+            {!isLoading && !!visibleNews.length && (
                 <>
                 <ul className="market-news-list">
                     {visibleNews.map((article, idx) => (

@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { userService } from '../services/user.service'
 
 // A decorative candle sequence: [open, close, high, low].
@@ -106,15 +105,14 @@ function priceToY(price) {
     return +(CANDLE_BASE_Y - (price - CANDLE_LOW_PRICE) * CANDLE_SCALE).toFixed(1)
 }
 
-export function LoginSignup() {
+// Reports the new user upwards. The app decides where they go from there.
+export function LoginSignup({ onAuth }) {
 
     const [isSignup, setIsSignup] = useState(false)
     const [credentials, setCredentials] = useState({ name: '', email: '', password: '' })
     const [errorMsg, setErrorMsg] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [isPasswordShown, setIsPasswordShown] = useState(false)
-
-    const navigate = useNavigate()
 
     function handleChange({ target }) {
         const { name, value } = target
@@ -140,7 +138,7 @@ export function LoginSignup() {
                 ? await userService.signup(credentials)
                 : await userService.login(credentials)
             setCredentials({ name: '', email: '', password: '' })
-            navigate(user.onboardingCompleted ? '/dashboard' : '/onboarding')
+            onAuth(user)
         } catch (err) {
             console.error('Authentication failed:', err.message)
             setErrorMsg(err.message)

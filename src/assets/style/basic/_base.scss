@@ -54,3 +54,39 @@ button:disabled {
     outline: 2px solid $clr-accent;
     outline-offset: 2px;
 }
+
+/* ---------- Session restore ---------- */
+
+// Shown while the app asks the server who is logged in, so no page renders
+// with the wrong answer
+.app-loader {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: $space-md;
+    min-height: 100dvh;
+    padding: $space-lg;
+    color: $clr-text-muted;
+    font-size: 14px;
+    text-align: center;
+
+    .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        background-color: rgba($clr-accent, 0.14);
+        border: 1px solid rgba($clr-accent, 0.35);
+        border-radius: $radius-md;
+    }
+
+    svg {
+        width: 24px;
+        height: 24px;
+        fill: none;
+        stroke: $clr-accent;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+}

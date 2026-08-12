@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { userService } from '../services/user.service'
 import { userPreferencesService } from '../services/user-preferences.service'
 import { ASSETS } from '../data/assets'
 import { INVESTOR_TYPES, CONTENT_TYPES } from '../data/preferences'
@@ -21,14 +19,14 @@ function CheckIcon() {
     )
 }
 
-export function Onboarding() {
+// Saving the answers finishes onboarding, so the updated user is reported
+// upwards and the app moves on to the dashboard
+export function Onboarding({ onPreferencesSaved }) {
 
     const [step, setStep] = useState(1)
     const [preferences, setPreferences] = useState({ assets: [], investorType: '', contentTypes: [] })
     const [errorMsg, setErrorMsg] = useState('')
     const [isLoading, setIsLoading] = useState(false)
-
-    const navigate = useNavigate()
 
     function toggleValue(field, value) {
         setPreferences(prevPreferences => {
@@ -76,9 +74,8 @@ export function Onboarding() {
         setErrorMsg('')
 
         try {
-            await userPreferencesService.savePreferences(preferences)
-            await userService.completeOnboarding()
-            navigate('/')
+            const updatedUser = await userPreferencesService.savePreferences(preferences)
+            onPreferencesSaved(updatedUser)
         } catch (err) {
             console.error('Saving preferences failed:', err.message)
             setErrorMsg(err.message)

@@ -1,59 +1,12 @@
-import { userService } from './user.service'
+import { httpService } from './http.service'
 
-const STORAGE_KEY_PREFERENCES = 'userPreferences'
-
+// Preferences live on the user document, so saving them returns the whole
+// updated user. There is no getPreferences: the logged in user already carries
+// them, and asking again would be a second request for data we hold.
 export const userPreferencesService = {
     savePreferences,
-    getPreferences,
 }
 
-async function savePreferences(preferences) {
-    const loggedinUser = userService.getLoggedinUser()
-    if (!loggedinUser) throw new Error('No logged in user')
-
-    const { assets, investorType, contentTypes } = preferences
-    const allPreferences = _getAllPreferences()
-
-    // A user has only one preferences record, so update it instead of adding a new one
-    let savedPreferences = allPreferences.find(prefs => prefs.userId === loggedinUser._id)
-
-    if (savedPreferences) {
-        savedPreferences.assets = assets
-        savedPreferences.investorType = investorType
-        savedPreferences.contentTypes = contentTypes
-    } else {
-        savedPreferences = {
-            _id: 'pref' + Date.now(),
-            userId: loggedinUser._id,
-            assets,
-            investorType,
-            contentTypes,
-        }
-        allPreferences.push(savedPreferences)
-    }
-
-    localStorage.setItem(STORAGE_KEY_PREFERENCES, JSON.stringify(allPreferences))
-
-    return savedPreferences
-}
-
-async function getPreferences(userId) {
-    const allPreferences = _getAllPreferences()
-    return allPreferences.find(prefs => prefs.userId === userId) || null
-}
-
-function _getAllPreferences() {
-    try {
-        const allPreferences = JSON.parse(localStorage.getItem(STORAGE_KEY_PREFERENCES))
-        if (!Array.isArray(allPreferences)) {
-            // Nothing stored yet is the normal state before onboarding, and stays quiet
-            if (allPreferences !== null) console.error('Ignoring stored preferences: expected an array')
-            return []
-        }
-
-        return allPreferences
-    } catch {
-        console.error('Ignoring stored preferences: not valid JSON')
-        return []
-    }
+async function savePreferences({ assets, investorType, contentTypes }) {
+    return httpService.put('/user/preferences', { assets, investorType, contentTypes })
 }
