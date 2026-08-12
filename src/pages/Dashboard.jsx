@@ -35,6 +35,33 @@ const CONTENT_TYPE_LABELS = {
     'fun': 'Fun',
 }
 
+// One place defining the dashboard sections, their order and their shortcut labels
+const SECTION_BY_CONTENT_TYPE = {
+    'social': 'ai-insight',
+    'market-news': 'market-news',
+    'fun': 'crypto-meme',
+}
+
+const DEFAULT_SECTION_ORDER = ['ai-insight', 'market-news', 'crypto-meme']
+
+const SECTION_LABELS = {
+    'ai-insight': 'AI',
+    'market-news': 'News',
+    'crypto-meme': 'Meme',
+}
+
+// The first matching preference promotes one section to the top.
+// The others keep the default order behind it.
+function getSectionOrder(contentTypes = []) {
+    const promoted = contentTypes
+        .map(contentType => SECTION_BY_CONTENT_TYPE[contentType])
+        .find(Boolean)
+
+    if (!promoted) return DEFAULT_SECTION_ORDER
+
+    return [promoted, ...DEFAULT_SECTION_ORDER.filter(section => section !== promoted)]
+}
+
 function getGreeting() {
     const hour = new Date().getHours()
     if (hour < 12) return 'Good morning'
@@ -47,12 +74,16 @@ export function Dashboard() {
     const loggedinUser = userService.getLoggedinUser()
 
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [isNavOpen, setIsNavOpen] = useState(false)
     const [preferences, setPreferences] = useState(null)
     const [isPreferencesLoading, setIsPreferencesLoading] = useState(true)
     const [coins, setCoins] = useState([])
     const [isCoinsLoading, setIsCoinsLoading] = useState(true)
     const [hasCoinsFailed, setHasCoinsFailed] = useState(false)
     const accountRef = useRef(null)
+    const navRef = useRef(null)
+    const coinsLayerRef = useRef(null)
+    const heroBoundsRef = useRef(null) // cached on enter, so mousemove does no layout reads
 
     const navigate = useNavigate()
 
@@ -97,6 +128,26 @@ export function Dashboard() {
     }, [isPreferencesLoading])
 
     useEffect(() => {
+        if (!isNavOpen) return
+
+        function handleClickOutside(ev) {
+            if (navRef.current && !navRef.current.contains(ev.target)) setIsNavOpen(false)
+        }
+
+        function handleEscapeKeyPress(ev) {
+            if (ev.key === 'Escape') setIsNavOpen(false)
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        document.addEventListener('keydown', handleEscapeKeyPress)
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+            document.removeEventListener('keydown', handleEscapeKeyPress)
+        }
+    }, [isNavOpen])
+
+    useEffect(() => {
         if (!isMenuOpen) return
 
         function handleClickOutside(ev) {
@@ -116,6 +167,31 @@ export function Dashboard() {
         }
     }, [isMenuOpen])
 
+    // Pointer position goes straight into CSS variables, so the floating coins never re-render.
+    // CSS decides how far each depth layer moves, and ignores it on mobile and with reduced motion.
+    function onHeroPointerEnter(ev) {
+        heroBoundsRef.current = ev.currentTarget.getBoundingClientRect()
+    }
+
+    function onHeroPointerMove(ev) {
+        const bounds = heroBoundsRef.current
+        if (!bounds || !coinsLayerRef.current) return
+
+        const x = (ev.clientX - bounds.left) / bounds.width - 0.5
+        const y = (ev.clientY - bounds.top) / bounds.height - 0.5
+
+        coinsLayerRef.current.style.setProperty('--pointer-x', x.toFixed(3))
+        coinsLayerRef.current.style.setProperty('--pointer-y', y.toFixed(3))
+    }
+
+    function onHeroPointerLeave() {
+        heroBoundsRef.current = null
+        if (!coinsLayerRef.current) return
+
+        coinsLayerRef.current.style.setProperty('--pointer-x', '0')
+        coinsLayerRef.current.style.setProperty('--pointer-y', '0')
+    }
+
     async function onLogout() {
         setIsMenuOpen(false)
         await userService.logout()
@@ -124,6 +200,15 @@ export function Dashboard() {
 
     // Right after logout there is one render without a user, before the route changes
     if (!loggedinUser) return null
+
+    // The same order drives the header shortcuts and the rendered sections
+    const sectionOrder = getSectionOrder(preferences?.contentTypes)
+
+    // Decorative only: the coin images already in the shared data, selected assets first
+    const floatingCoins = [
+        ...coins.filter(coin => coin.isSelected),
+        ...coins.filter(coin => !coin.isSelected),
+    ].filter(coin => coin.image).slice(0, 8)
 
     // Passed to every section so their feedback records share one user and one snapshot
     const feedbackContext = {
@@ -144,6 +229,45 @@ export function Dashboard() {
                             </svg>
                         </span>
                         <span className="brand-name">Crypto Advisor</span>
+                    </div>
+
+                    <nav className="header-nav" aria-label="Dashboard sections">
+                        {sectionOrder.map(section => (
+                            <a href={`#${section}`} key={section}>{SECTION_LABELS[section]}</a>
+                        ))}
+                    </nav>
+
+                    <div className="header-actions">
+                    <div className="header-nav-mobile" ref={navRef}>
+                        <button
+                            type="button"
+                            className="nav-toggle"
+                            onClick={() => setIsNavOpen(prevIsOpen => !prevIsOpen)}
+                            aria-haspopup="menu"
+                            aria-expanded={isNavOpen}
+                            aria-label="Dashboard sections"
+                        >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M4 7h16" />
+                                <path d="M4 12h16" />
+                                <path d="M4 17h16" />
+                            </svg>
+                        </button>
+
+                        {isNavOpen && (
+                            <div className="nav-menu" role="menu">
+                                {sectionOrder.map(section => (
+                                    <a
+                                        href={`#${section}`}
+                                        key={section}
+                                        role="menuitem"
+                                        onClick={() => setIsNavOpen(false)}
+                                    >
+                                        {SECTION_LABELS[section]}
+                                    </a>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="header-account" ref={accountRef}>
@@ -179,44 +303,80 @@ export function Dashboard() {
                             </div>
                         )}
                     </div>
+                    </div>
                 </div>
             </header>
 
             <main className="dashboard-main">
 
-                <section className="dashboard-intro">
-                    <p className="intro-greeting">{getGreeting()}, {loggedinUser.name.split(' ')[0]}</p>
-                    <h1>Your market, personalized for you.</h1>
-                    <p className="intro-text">
-                        Prices, news and AI insights based on the assets and interests you selected.
-                    </p>
+                <div className="dashboard-stage">
+                <div className="dashboard-hero">
+                    <section
+                        className="dashboard-intro"
+                        onMouseEnter={onHeroPointerEnter}
+                        onMouseMove={onHeroPointerMove}
+                        onMouseLeave={onHeroPointerLeave}
+                    >
 
-                    {preferences && (
-                        <div className="intro-tags">
-                            <div className="tag-group">
-                                {preferences.assets.map(asset => (
-                                    <span className="tag tag-asset" key={asset}>
-                                        {ASSET_LABELS[asset] || asset}
+                        <p className="intro-greeting">{getGreeting()}, {loggedinUser.name.split(' ')[0]}</p>
+                        <h1>Your market, personalized for you.</h1>
+                        <p className="intro-text">
+                            Prices, news and AI insights based on the assets and interests you selected.
+                        </p>
+
+                        {preferences && (
+                            <div className="intro-tags">
+                                <div className="tag-group">
+                                    {preferences.assets.map(asset => (
+                                        <span className="tag tag-asset" key={asset}>
+                                            {ASSET_LABELS[asset] || asset}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                <div className="tag-group">
+                                    <span className="tag tag-investor">
+                                        {INVESTOR_TYPE_LABELS[preferences.investorType] || preferences.investorType}
                                     </span>
+                                </div>
+
+                                <div className="tag-group">
+                                    {preferences.contentTypes.map(contentType => (
+                                        <span className="tag" key={contentType}>
+                                            {CONTENT_TYPE_LABELS[contentType] || contentType}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Decorative only: fills the empty area under the intro text */}
+                        <div className="intro-coins" ref={coinsLayerRef} aria-hidden="true">
+                            {/* Faint depth field sitting behind the coins */}
+                            <div className="intro-points">
+                                {Array.from({ length: 14 }, (_, idx) => (
+                                    <span className="intro-point" key={idx}></span>
                                 ))}
                             </div>
 
-                            <div className="tag-group">
-                                <span className="tag tag-investor">
-                                    {INVESTOR_TYPE_LABELS[preferences.investorType] || preferences.investorType}
+                            {floatingCoins.map((coin, idx) => (
+                                <span className={`coin-slot is-${idx + 1}`} key={coin.id}>
+                                    <span className="coin-float">
+                                        <img src={coin.image} alt="" loading="lazy" />
+                                    </span>
                                 </span>
-                            </div>
-
-                            <div className="tag-group">
-                                {preferences.contentTypes.map(contentType => (
-                                    <span className="tag" key={contentType}>
-                                        {CONTENT_TYPE_LABELS[contentType] || contentType}
-                                    </span>
-                                ))}
-                            </div>
+                            ))}
                         </div>
-                    )}
-                </section>
+                    </section>
+
+                    <CoinData
+                        userId={loggedinUser._id}
+                        context={feedbackContext}
+                        coins={coins}
+                        isLoading={isCoinsLoading}
+                        hasFailed={hasCoinsFailed}
+                    />
+                </div>
 
                 <CoinPricesList
                     userId={loggedinUser._id}
@@ -225,33 +385,40 @@ export function Dashboard() {
                     isLoading={isCoinsLoading}
                     hasFailed={hasCoinsFailed}
                 />
+                </div>
 
-                <CoinData
-                    userId={loggedinUser._id}
-                    context={feedbackContext}
-                    coins={coins}
-                    isLoading={isCoinsLoading}
-                    hasFailed={hasCoinsFailed}
-                />
+                {sectionOrder.map(section => {
+                    if (section === 'market-news') {
+                        return (
+                            <MarketNewsList
+                                key={section}
+                                id={section}
+                                userId={loggedinUser._id}
+                                context={feedbackContext}
+                                assets={preferences?.assets || []}
+                                investorType={preferences?.investorType || ''}
+                                isPreferencesLoading={isPreferencesLoading}
+                            />
+                        )
+                    }
 
-                <AIInsight
-                    userId={loggedinUser._id}
-                    context={feedbackContext}
-                    coins={coins}
-                    investorType={preferences?.investorType || ''}
-                    contentTypes={preferences?.contentTypes || []}
-                    isCoinsLoading={isCoinsLoading}
-                />
+                    if (section === 'ai-insight') {
+                        return (
+                            <AIInsight
+                                key={section}
+                                id={section}
+                                userId={loggedinUser._id}
+                                context={feedbackContext}
+                                coins={coins}
+                                investorType={preferences?.investorType || ''}
+                                contentTypes={preferences?.contentTypes || []}
+                                isCoinsLoading={isCoinsLoading}
+                            />
+                        )
+                    }
 
-                <MarketNewsList
-                    userId={loggedinUser._id}
-                    context={feedbackContext}
-                    assets={preferences?.assets || []}
-                    investorType={preferences?.investorType || ''}
-                    isPreferencesLoading={isPreferencesLoading}
-                />
-
-                <CryptoMeme userId={loggedinUser._id} context={feedbackContext} />
+                    return <CryptoMeme key={section} id={section} userId={loggedinUser._id} context={feedbackContext} />
+                })}
 
             </main>
         </div>

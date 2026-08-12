@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { dashboardService } from '../services/dashboard.service'
 import { FeedbackButtons } from './FeedbackButtons'
 
-export function AIInsight({ coins = [], investorType = '', contentTypes = [], isCoinsLoading = false, userId = '', context = {} }) {
+export function AIInsight({ coins = [], investorType = '', contentTypes = [], isCoinsLoading = false, userId = '', context = {}, id }) {
 
     const [insight, setInsight] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -70,6 +70,7 @@ export function AIInsight({ coins = [], investorType = '', contentTypes = [], is
     return (
         <section
             className="dashboard-section ai-insight"
+            id={id}
             aria-busy={isBusy}
             onMouseEnter={onPointerEnter}
             onMouseMove={onPointerMove}
@@ -77,7 +78,8 @@ export function AIInsight({ coins = [], investorType = '', contentTypes = [], is
         >
             <header className="ai-insight-header">
                 <div className="header-identity">
-                    <span className="header-spark" ref={sparkRef} aria-hidden="true">
+                    <span className="section-icon-wrap" aria-hidden="true">
+                    <span className="header-spark section-icon" ref={sparkRef}>
                         <svg viewBox="0 0 32 32" focusable="false">
                             <path
                                 className="spark-main"
@@ -92,6 +94,7 @@ export function AIInsight({ coins = [], investorType = '', contentTypes = [], is
                                 d="M24 6.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"
                             />
                         </svg>
+                    </span>
                     </span>
 
                     <div className="header-text">

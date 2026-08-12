@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { dashboardService } from '../services/dashboard.service'
 import { FeedbackButtons } from './FeedbackButtons'
 
-export function CryptoMeme({ userId = '', context = {} }) {
+export function CryptoMeme({ userId = '', context = {}, id }) {
 
     const [meme, setMeme] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -33,9 +33,20 @@ export function CryptoMeme({ userId = '', context = {} }) {
     const isFromReddit = hasMeme && !!meme.subreddit && !!meme.postUrl
 
     return (
-        <section className="dashboard-section crypto-meme" aria-busy={isLoading}>
+        <section className="dashboard-section crypto-meme" id={id} aria-busy={isLoading}>
             <header className="crypto-meme-header">
                 <span className="header-accent" aria-hidden="true"></span>
+
+                <span className="section-icon-wrap" aria-hidden="true">
+                <span className="section-icon">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                        <circle cx="12" cy="12" r="8.5" />
+                        <path d="M8.5 14a4.5 4.5 0 0 0 7 0" />
+                        <path d="M9 9.5h.01" />
+                        <path d="M15 9.5h.01" />
+                    </svg>
+                </span>
+                </span>
 
                 <div className="header-text">
                     <h2>Fun Crypto Meme</h2>

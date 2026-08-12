@@ -290,3 +290,91 @@
         height: 34px;
     }
 }
+
+/* ---------- Continuous ticker (all sizes) ---------- */
+
+// Viewport clips and never moves; only the track inside it animates
+.coin-ticker {
+    overflow: hidden;
+}
+
+.coin-ticker-track {
+    display: flex;
+    gap: $space-sm + 4px;
+    width: max-content;
+    animation: coin-ticker-scroll 45s linear infinite;
+}
+
+// Hover is a desktop affordance; touch users just watch it run
+.coin-ticker:hover .coin-ticker-track {
+    animation-play-state: paused;
+}
+
+// Fixed tile width, so all three sequences are exactly the same length
+.coin-strip {
+    flex: none;
+    overflow: visible;
+
+    > li {
+        flex: 0 0 auto;
+        width: 138px;
+    }
+}
+
+// The track holds three identical sequences. Shifting by exactly one sequence
+// plus one gap puts copy 2 where copy 1 began, so the seam is invisible, and the
+// remaining copies always keep the viewport covered.
+@keyframes coin-ticker-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-100% / 3 - #{$space-sm + 4px} / 3)); }
+}
+
+@media (min-width: $bp-desktop) {
+    .coin-prices-header {
+        margin-bottom: $space-sm + 4px;
+        padding-bottom: $space-sm + 2px;
+    }
+
+    .coin-strip > li {
+        width: 152px;
+    }
+
+    .coin-prices .coin-price {
+        font-size: 17px;
+    }
+
+    .coin-prices .coin-sparkline {
+        height: 26px;
+    }
+
+    .coin-prices .coin-top {
+        padding: $space-sm + 2px $space-sm + 2px 0;
+    }
+
+    .coin-prices .feedback-buttons {
+        margin-top: $space-sm + 4px;
+        padding-top: $space-sm + 2px;
+    }
+}
+
+// A slower pass on small screens, and manual scrolling when motion is reduced
+@media (max-width: $bp-mobile) {
+    .coin-ticker-track {
+        animation-duration: 60s;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .coin-ticker {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .coin-ticker::-webkit-scrollbar {
+        display: none;
+    }
+
+    .coin-ticker-track {
+        animation: none;
+    }
+}

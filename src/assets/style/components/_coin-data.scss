@@ -190,12 +190,35 @@
 /* ---------- Chart ---------- */
 
 .coin-data .chart-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $space-sm;
     margin-top: $space-lg;
     color: $clr-text-muted;
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+}
+
+// The year to date figure, not to be confused with the 24h change above
+.coin-data .chart-change {
+    flex: none;
+    font-size: 12px;
+    letter-spacing: 0;
+
+    &.is-up {
+        color: $clr-success;
+    }
+
+    &.is-down {
+        color: $clr-error;
+    }
+
+    &.is-flat {
+        color: $clr-text-muted;
+    }
 }
 
 .coin-chart-area {
@@ -230,6 +253,12 @@
     &.is-down {
         .chart-line { stroke: $clr-error; }
         .chart-area { fill: rgba($clr-error, 0.1); }
+    }
+
+    // No usable history, or a completely flat year
+    &.is-flat {
+        .chart-line { stroke: $clr-text-muted; }
+        .chart-area { fill: rgba($clr-text-muted, 0.08); }
     }
 }
 
@@ -327,5 +356,82 @@
 
     .coin-chart-area {
         height: 170px;
+    }
+}
+
+/* ---------- Desktop ---------- */
+
+@media (min-width: $bp-desktop) {
+    // The hero intro already titles this half of the row
+    .coin-data .coin-data-header {
+        display: none;
+    }
+
+    // Its own contained dark surface, sized by the hero row and free to shrink
+    .dashboard-main .coin-data {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        padding: $space-sm + 4px;
+        background-color: rgba($clr-surface, 0.55);
+        border: 1px solid rgba($clr-border, 0.8);
+        border-radius: $radius-md;
+    }
+
+    .coin-tabs {
+        margin-bottom: $space-sm;
+    }
+
+    .coin-data .coin-tab {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    // One surface only: the panel keeps the layout, not a second card
+    .coin-panel {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        padding: 0;
+        background-color: transparent;
+        border: 0;
+    }
+
+    .coin-data .identity-logo {
+        width: 32px;
+        height: 32px;
+    }
+
+    .coin-data .pricing-price {
+        font-size: 23px;
+    }
+
+    .coin-stats {
+        margin-top: $space-sm + 2px;
+        padding-top: $space-sm;
+
+        dd {
+            font-size: 15px;
+        }
+    }
+
+    .coin-data .chart-label {
+        margin-top: $space-sm + 2px;
+    }
+
+    // The chart absorbs the leftover height, inside a bounded range
+    .coin-chart-area {
+        flex: 1;
+        height: auto;
+        min-height: 110px;
+        max-height: 160px;
+        margin-top: $space-sm;
+    }
+
+    .coin-data .feedback-buttons {
+        margin-top: $space-sm + 2px;
+        padding-top: $space-sm;
     }
 }

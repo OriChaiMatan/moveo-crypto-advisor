@@ -1,6 +1,8 @@
 @use '../basic/variables' as *;
 
-$dashboard-max-width: 1100px;
+$dashboard-max-width: 1280px;
+$dashboard-gutter: clamp(24px, 3.5vw, 64px);
+$dashboard-header-height: 61px;
 
 .dashboard {
     min-height: 100vh;
@@ -55,6 +57,140 @@ $dashboard-max-width: 1100px;
     font-size: 15px;
     font-weight: 600;
     letter-spacing: 0.02em;
+}
+
+/* ---------- Section shortcuts ---------- */
+
+// Inline shortcuts are desktop only; smaller screens use the hamburger instead
+.dashboard .header-nav {
+    display: none;
+}
+
+.dashboard .header-actions {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    min-width: 0;
+}
+
+.dashboard .header-nav-mobile {
+    position: relative;
+    flex: none;
+}
+
+.dashboard .nav-toggle {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    color: $clr-text-muted;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: $radius-sm;
+    transition: color $transition, background-color $transition, border-color $transition;
+
+    svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+    }
+
+    &:hover,
+    &[aria-expanded='true'] {
+        color: $clr-text;
+        background-color: $clr-bg;
+        border-color: $clr-border;
+    }
+}
+
+// Same panel language as the account dropdown
+.dashboard .nav-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 20;
+    min-width: 150px;
+    padding: 6px;
+    background-color: $clr-surface;
+    border: 1px solid $clr-border;
+    border-radius: $radius-md;
+    box-shadow: 0 16px 32px rgba(#000, 0.4);
+
+    a {
+        display: block;
+        padding: 9px 12px;
+        color: $clr-text;
+        font-size: 14px;
+        text-decoration: none;
+        border-radius: $radius-sm - 2px;
+        transition: background-color $transition;
+
+        &:hover {
+            background-color: $clr-surface-soft;
+        }
+
+        &:focus-visible {
+            outline-offset: -2px;
+        }
+    }
+}
+
+@media (min-width: $bp-desktop) {
+    // Desktop: inline links, no hamburger
+    .dashboard .header-nav {
+        display: flex;
+        align-items: center;
+        gap: $space-lg;
+        margin: 0 auto 0 $space-xl;
+
+        a {
+            position: relative;
+            padding-bottom: 3px;
+            color: $clr-text-muted;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: color $transition;
+
+            // Accent line grows in on hover instead of a heavy pill
+            &::after {
+                content: '';
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 2px;
+                border-radius: 1px;
+                background-color: $clr-accent;
+                opacity: 0;
+                transform: scaleX(0.4);
+                transition: opacity $transition, transform $transition;
+            }
+
+            &:hover {
+                color: $clr-text;
+
+                &::after {
+                    opacity: 1;
+                    transform: scaleX(1);
+                }
+            }
+
+            &:focus-visible {
+                outline: 2px solid $clr-accent;
+                outline-offset: 4px;
+                border-radius: 2px;
+            }
+        }
+    }
+
+    .dashboard .header-nav-mobile {
+        display: none;
+    }
 }
 
 /* ---------- Account control ---------- */
@@ -229,6 +365,77 @@ $dashboard-max-width: 1100px;
     font-size: 14px;
 }
 
+// The header is taller on mobile, where the shortcuts take their own row
+.dashboard-main .market-news,
+.dashboard-main .ai-insight,
+.dashboard-main .crypto-meme {
+    scroll-margin-top: 80px;
+}
+
+@media (min-width: $bp-desktop) {
+    .dashboard-main .market-news,
+    .dashboard-main .ai-insight,
+    .dashboard-main .crypto-meme {
+        scroll-margin-top: $space-lg;
+    }
+}
+
+/* ---------- Floating coin decoration ---------- */
+
+// Desktop only, and always out of the document flow
+.intro-coins {
+    display: none;
+}
+
+// All three section icons use the same tile at every size
+.dashboard-main .section-icon-wrap {
+    position: relative;
+    flex: none;
+    display: grid;
+    place-items: center;
+
+    // Soft ambient shape behind the tile
+    &::before {
+        content: '';
+        position: absolute;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba($clr-accent, 0.16), transparent 68%);
+        pointer-events: none;
+    }
+}
+
+.dashboard-main .section-icon {
+    position: relative;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: $radius-sm;
+    background-color: $clr-surface-soft;
+    border: 1px solid rgba($clr-accent, 0.35);
+    box-shadow: 0 0 18px rgba($clr-accent, 0.14);
+
+    svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: $clr-accent;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        overflow: visible;
+    }
+}
+
+// The accent bar is replaced by the icon tile for these two
+.market-news-header .header-accent,
+.crypto-meme-header .header-accent {
+    display: none;
+}
+
 /* ---------- Personalization tags ---------- */
 
 .dashboard .intro-tags {
@@ -271,24 +478,375 @@ $dashboard-max-width: 1100px;
 
 /* ---------- Sections ---------- */
 
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: $space-lg;
+/* ---------- Below the desktop composition ---------- */
+
+// The page owns the rhythm between sections instead of each component's own
+// margin, so every personalized order gets the same gap. Market News has no
+// bottom margin of its own, which is why whichever section followed it touched.
+@media (max-width: #{$bp-desktop - 1px}) {
+    .dashboard-main,
+    .dashboard-stage,
+    .dashboard-hero {
+        display: flex;
+        flex-direction: column;
+        gap: $space-lg;
+    }
+
+    .dashboard-main .dashboard-section,
+    .dashboard-main .dashboard-intro {
+        margin-bottom: 0;
+    }
 }
 
-// The wide sections keep the grid balanced while the others sit side by side
-.dashboard .section-prices,
-.dashboard .section-meme {
-    grid-column: 1 / -1;
+@media (max-width: $bp-mobile) {
+    // A flat intro on small screens
+    .dashboard-main .dashboard-intro::after {
+        content: none;
+    }
+}
+
+/* ---------- Desktop composition ---------- */
+
+// Below the desktop breakpoint the wrappers stay plain blocks,
+// so every section keeps stacking exactly as it did before.
+@media (min-width: $bp-desktop) {
+    // The canvas scales with the viewport instead of sitting in a centred column
+    .dashboard-header-inner,
+    .dashboard-main {
+        max-width: none;
+        padding-inline: $dashboard-gutter;
+    }
+
+    // One canvas: the page owns the rhythm instead of each card's own margin
+    .dashboard-main {
+        display: flex;
+        flex-direction: column;
+        gap: $space-lg;
+        padding-block: $space-lg;
+    }
+
+    // The sections stop being cards. Their inner widgets keep their own surfaces.
+    .dashboard-main .dashboard-section,
+    .dashboard-main .dashboard-intro {
+        margin-bottom: 0;
+        padding: 0;
+        background-color: transparent;
+        border: 0;
+        border-radius: 0;
+    }
+
+    // The grid texture and wash belonged to the intro card, not to the canvas
+    .dashboard-main .dashboard-intro::before,
+    .dashboard-main .dashboard-intro::after {
+        content: none;
+    }
+
+    // The three full-width content sections keep a real surface again.
+    // The intro and Market Overview stay open on the canvas.
+    // These three stay contained cards: the reset above clears every section,
+    // so their surface has to be declared again here
+    .dashboard-main .market-news,
+    .dashboard-main .ai-insight,
+    .dashboard-main .crypto-meme {
+        padding: $space-lg;
+        background-color: rgba($clr-surface, 0.55);
+        border: 1px solid rgba($clr-border, 0.8);
+        border-radius: $radius-lg;
+    }
+
+    /* ---------- One heading language for every dashboard section ---------- */
+
+    .dashboard-main .coin-prices-header,
+    .dashboard-main .market-news-header,
+    .dashboard-main .ai-insight-header,
+    .dashboard-main .crypto-meme-header {
+        align-items: flex-start;
+        gap: $space-sm + 4px;
+        margin-bottom: $space-lg;
+        padding-bottom: $space-md;
+        border-bottom: 1px solid $clr-border;
+    }
+
+    .dashboard-main .coin-prices-header h2,
+    .dashboard-main .market-news-header h2,
+    .dashboard-main .ai-insight-header h2,
+    .dashboard-main .crypto-meme-header h2 {
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .dashboard-main .coin-prices-header .header-subtitle,
+    .dashboard-main .market-news-header .header-subtitle,
+    .dashboard-main .ai-insight-header .header-subtitle,
+    .dashboard-main .crypto-meme-header .header-subtitle {
+        margin-top: 2px;
+        color: $clr-text-muted;
+        font-size: 13px;
+    }
+
+    .dashboard-main .header-identity {
+        gap: $space-sm + 4px;
+    }
+
+    .dashboard-main > * {
+        margin-bottom: 0;
+    }
+
+    // Intro on the left, the coin detail panel on the right
+    .dashboard-hero {
+        display: grid;
+        grid-template-columns: 1fr 1.15fr;
+        gap: $space-lg;
+        align-items: start;
+    }
+
+    .dashboard-hero > * {
+        min-width: 0;
+    }
+
+    // Header + hero + ticker fill exactly the first screen; the feed starts below it
+    .dashboard-stage {
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) auto;
+        gap: $space-lg;
+        height: calc(100vh - #{$dashboard-header-height} - #{$space-lg * 2});
+    }
+
+    .dashboard-stage .dashboard-hero {
+        min-height: 0;
+        align-items: stretch;
+    }
+
+    // The intro is a column so the decoration can take the leftover space
+    .dashboard-main .dashboard-intro {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* ---------- Floating coins ---------- */
+
+    // Only ever the area under the chips: it starts where the text ends
+    .intro-coins {
+        display: block;
+        position: relative;
+        flex: 1;
+        min-height: 130px;
+        margin-top: $space-lg;
+        pointer-events: none;
+    }
+
+    // Sits behind the coins, inside the same decorative area
+    .intro-points {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+    }
+
+    .intro-point {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        border-radius: 50%;
+        background-color: #E8EEF9;
+        opacity: 0.28;
+        animation: point-pulse 7s ease-in-out infinite alternate;
+    }
+
+    // Scattered by hand: varied position, size, brightness and timing
+    .intro-point:nth-child(1)  { left: 8%;  top: 12%; animation-duration: 6s;    animation-delay: 0.2s; }
+    .intro-point:nth-child(2)  { left: 17%; top: 68%; width: 1px; height: 1px; opacity: 0.16; animation-duration: 9s; animation-delay: 1.4s; }
+    .intro-point:nth-child(3)  { left: 26%; top: 32%; width: 3px; height: 3px; opacity: 0.42; animation-duration: 7.5s; animation-delay: 0.6s; }
+    .intro-point:nth-child(4)  { left: 33%; top: 86%; width: 1px; height: 1px; opacity: 0.2;  animation-duration: 11s; animation-delay: 2.1s; }
+    .intro-point:nth-child(5)  { left: 41%; top: 18%; animation-duration: 8.5s;  animation-delay: 1.9s; }
+    .intro-point:nth-child(6)  { left: 49%; top: 60%; width: 1px; height: 1px; opacity: 0.18; animation-duration: 10s; animation-delay: 0.9s; }
+    .intro-point:nth-child(7)  { left: 57%; top: 8%;  width: 3px; height: 3px; opacity: 0.38; animation-duration: 6.5s; animation-delay: 2.6s; }
+    .intro-point:nth-child(8)  { left: 63%; top: 44%; animation-duration: 12s;   animation-delay: 0.4s; }
+    .intro-point:nth-child(9)  { left: 71%; top: 78%; width: 1px; height: 1px; opacity: 0.15; animation-duration: 9.5s; animation-delay: 1.7s; }
+    .intro-point:nth-child(10) { left: 79%; top: 26%; animation-duration: 7s;    animation-delay: 3.1s; }
+    .intro-point:nth-child(11) { left: 84%; top: 56%; width: 1px; height: 1px; opacity: 0.22; animation-duration: 13s; animation-delay: 0.7s; }
+    .intro-point:nth-child(12) { left: 92%; top: 38%; width: 3px; height: 3px; opacity: 0.34; animation-duration: 8s;  animation-delay: 2.3s; }
+    .intro-point:nth-child(13) { left: 12%; top: 46%; width: 1px; height: 1px; opacity: 0.2;  animation-duration: 10.5s; animation-delay: 1.2s; }
+    .intro-point:nth-child(14) { left: 96%; top: 70%; animation-duration: 11.5s; animation-delay: 2.9s; }
+
+    // Wrapper owns the pointer offset, the inner span owns the idle drift
+    .coin-slot {
+        z-index: 1;
+        position: absolute;
+        transition: transform 0.25s ease-out;
+    }
+
+    .coin-float {
+        display: grid;
+        place-items: center;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: rgba($clr-surface, 0.6);
+        border: 1px solid rgba($clr-border, 0.7);
+
+        img {
+            width: 62%;
+            height: 62%;
+            border-radius: 50%;
+        }
+    }
+
+    // Three depth groups. Each coin drifts on its own timing, so they never move as a group.
+    // Prominent
+    .coin-slot.is-1 {
+        left: 4%;
+        top: 20%;
+        width: 58px;
+        height: 58px;
+        opacity: 0.92;
+        transform: translate(calc(var(--pointer-x, 0) * 34px), calc(var(--pointer-y, 0) * 26px));
+
+        .coin-float { animation: coin-drift-a 9s ease-in-out infinite alternate; }
+    }
+
+    .coin-slot.is-2 {
+        left: 34%;
+        top: 54%;
+        width: 54px;
+        height: 54px;
+        opacity: 0.85;
+        transform: translate(calc(var(--pointer-x, 0) * -28px), calc(var(--pointer-y, 0) * 22px));
+
+        .coin-float { animation: coin-drift-b 11s ease-in-out infinite alternate 0.8s; }
+    }
+
+    // Medium
+    .coin-slot.is-3 {
+        left: 20%;
+        top: 4%;
+        width: 46px;
+        height: 46px;
+        opacity: 0.68;
+        transform: translate(calc(var(--pointer-x, 0) * 22px), calc(var(--pointer-y, 0) * -18px));
+
+        .coin-float { animation: coin-drift-c 8s ease-in-out infinite alternate 1.6s; }
+    }
+
+    .coin-slot.is-4 {
+        left: 56%;
+        top: 30%;
+        width: 42px;
+        height: 42px;
+        opacity: 0.6;
+        transform: translate(calc(var(--pointer-x, 0) * -18px), calc(var(--pointer-y, 0) * 14px));
+
+        .coin-float { animation: coin-drift-b 12.5s ease-in-out infinite alternate 0.4s; }
+    }
+
+    .coin-slot.is-5 {
+        left: 74%;
+        top: 62%;
+        width: 38px;
+        height: 38px;
+        opacity: 0.52;
+        transform: translate(calc(var(--pointer-x, 0) * 16px), calc(var(--pointer-y, 0) * 12px));
+
+        .coin-float { animation: coin-drift-a 10.5s ease-in-out infinite alternate 2.2s; }
+    }
+
+    // Subtle
+    .coin-slot.is-6 {
+        left: 88%;
+        top: 14%;
+        width: 34px;
+        height: 34px;
+        opacity: 0.44;
+        transform: translate(calc(var(--pointer-x, 0) * -10px), calc(var(--pointer-y, 0) * -8px));
+
+        .coin-float { animation: coin-drift-d 13s ease-in-out infinite alternate 1.1s; }
+    }
+
+    .coin-slot.is-7 {
+        left: 46%;
+        top: 74%;
+        width: 30px;
+        height: 30px;
+        opacity: 0.36;
+        transform: translate(calc(var(--pointer-x, 0) * 8px), calc(var(--pointer-y, 0) * -6px));
+
+        .coin-float { animation: coin-drift-d 14s ease-in-out infinite alternate 2.8s; }
+    }
+
+    .coin-slot.is-8 {
+        left: 66%;
+        top: 6%;
+        width: 28px;
+        height: 28px;
+        opacity: 0.3;
+        transform: translate(calc(var(--pointer-x, 0) * -6px), calc(var(--pointer-y, 0) * 5px));
+
+        .coin-float { animation: coin-drift-c 15s ease-in-out infinite alternate 0.2s; }
+    }
+
+    /* ---------- Section icon: a little larger on desktop ---------- */
+
+    .dashboard-main .section-icon-wrap::before {
+        width: 132px;
+        height: 132px;
+    }
+
+    .dashboard-main .section-icon {
+        width: 30px;
+        height: 30px;
+        transition: box-shadow $transition, border-color $transition;
+
+        svg {
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    // The section level light sat right behind the icon, so the shared halo replaces it
+    .dashboard-main .ai-insight::before {
+        content: none;
+    }
+
+    // The AI spark keeps its filled glyph and pointer drift
+    .dashboard-main .ai-insight .section-icon svg {
+        fill: $clr-accent;
+        stroke: none;
+    }
+
+    // Same ambient lift on hover for all three sections
+    .dashboard-main .market-news:hover .section-icon,
+    .dashboard-main .ai-insight:hover .section-icon,
+    .dashboard-main .crypto-meme:hover .section-icon {
+        border-color: rgba($clr-accent, 0.5);
+        box-shadow: 0 0 24px rgba($clr-accent, 0.22);
+    }
+
+    /* ---------- Market Overview: feedback sits in the header row ---------- */
+
+    // The icon tile replaces the accent bar for these two
+    .dashboard-main .market-news-header .header-accent,
+    .dashboard-main .crypto-meme-header .header-accent {
+        display: none;
+    }
 }
 
 .dashboard-section {
     min-width: 0;
     padding: $space-lg;
-    background-color: $clr-surface;
-    border: 1px solid $clr-border;
+    background-color: rgba($clr-surface, 0.55);
+    border: 1px solid rgba($clr-border, 0.8);
     border-radius: $radius-lg;
+}
+
+// The intro and Market Overview sit open on the canvas at every size
+.dashboard-main .dashboard-intro,
+.dashboard-main .coin-prices {
+    padding: 0;
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
 }
 
 .dashboard .section-header {
@@ -324,10 +882,6 @@ $dashboard-max-width: 1100px;
         padding: $space-lg $space-md;
     }
 
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-        gap: $space-md;
-    }
 }
 
 @media (max-width: $bp-mobile) {
@@ -365,10 +919,49 @@ $dashboard-max-width: 1100px;
 
     .dashboard-section {
         padding: $space-md;
-        border-radius: $radius-md;
     }
 
     .dashboard .section-placeholder {
         min-height: 100px;
+    }
+}
+
+// Small, slow, and deliberately different from each other
+@keyframes coin-drift-a {
+    from { transform: translate(0, 0) rotate(-2deg); }
+    to   { transform: translate(13px, -17px) rotate(2deg); }
+}
+
+@keyframes coin-drift-b {
+    from { transform: translate(0, 0) rotate(1.5deg); }
+    to   { transform: translate(-14px, -13px) rotate(-2deg); }
+}
+
+@keyframes coin-drift-c {
+    from { transform: translate(0, 0) rotate(2deg); }
+    to   { transform: translate(11px, 15px) rotate(-2.5deg); }
+}
+
+// Softer variant for the small, distant coins
+@keyframes coin-drift-d {
+    from { transform: translate(0, 0) rotate(-1.5deg); }
+    to   { transform: translate(8px, 11px) rotate(2deg); }
+}
+
+// Distant points: barely there, just enough to feel alive
+@keyframes point-pulse {
+    from { transform: translate(0, 0); opacity: 0.18; }
+    to   { transform: translate(2px, -4px); opacity: 0.5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .coin-slot {
+        transform: none;
+        transition: none;
+    }
+
+    .coin-float,
+    .intro-point {
+        animation: none;
     }
 }

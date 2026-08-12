@@ -614,3 +614,12 @@
         padding: 2px 6px;
     }
 }
+
+/* ---------- Desktop: keep the feed compact ---------- */
+
+@media (min-width: $bp-desktop) {
+    // The featured story plus two supporting stories is enough for the dashboard
+    .market-news .news-item:nth-child(n + 4) {
+        display: none;
+    }
+}

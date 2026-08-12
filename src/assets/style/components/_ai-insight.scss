@@ -88,23 +88,10 @@
 
 /* ---------- AI icon ---------- */
 
+// Size, surface and glow come from the shared .section-icon tile.
+// Only the hover lift is AI specific.
 .ai-insight .header-spark {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 54px;
-    height: 54px;
-    border-radius: $radius-md;
-    background-color: $clr-surface-soft;
-    border: 1px solid rgba($clr-accent, 0.35);
-    box-shadow: 0 0 24px rgba($clr-accent, 0.14);
     transition: box-shadow $transition, border-color $transition;
-
-    svg {
-        width: 30px;
-        height: 30px;
-        overflow: visible;
-    }
 }
 
 .ai-insight:hover .header-spark {
@@ -266,16 +253,6 @@
         flex-direction: column;
         align-items: flex-start;
         gap: $space-sm + 2px;
-    }
-
-    .ai-insight .header-spark {
-        width: 46px;
-        height: 46px;
-
-        svg {
-            width: 26px;
-            height: 26px;
-        }
     }
 
     .ai-insight .header-text h2 {

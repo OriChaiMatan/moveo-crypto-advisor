@@ -31,7 +31,7 @@ function NewsSkeleton() {
     )
 }
 
-export function MarketNewsList({ assets = [], investorType = '', isPreferencesLoading = false, userId = '', context = {} }) {
+export function MarketNewsList({ assets = [], investorType = '', isPreferencesLoading = false, userId = '', context = {}, id }) {
 
     const [news, setNews] = useState([])
     const [newsSource, setNewsSource] = useState('')
@@ -65,9 +65,21 @@ export function MarketNewsList({ assets = [], investorType = '', isPreferencesLo
     const isBusy = isPreferencesLoading || isLoading
 
     return (
-        <section className="dashboard-section market-news" aria-busy={isBusy}>
+        <section className="dashboard-section market-news" id={id} aria-busy={isBusy}>
             <header className="market-news-header">
                 <span className="header-accent" aria-hidden="true"></span>
+
+                <span className="section-icon-wrap" aria-hidden="true">
+                <span className="section-icon">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                        <path d="M4.5 5.5h11v13h-11z" />
+                        <path d="M15.5 9h4v7.5a2 2 0 0 1-2 2h-2" />
+                        <path d="M7 9h6" />
+                        <path d="M7 12h6" />
+                        <path d="M7 15h4" />
+                    </svg>
+                </span>
+                </span>
 
                 <div className="header-text">
                     <div className="header-top">

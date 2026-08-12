@@ -34,24 +34,34 @@ export function CoinPricesList({ coins = [], isLoading = false, hasFailed = fals
             )}
 
             {!isLoading && !hasFailed && !!coins.length && (
-                <>
-                <ul className="coin-strip">
-                    {coins.map(coin => (
-                        <li key={coin.id}>
-                            <CoinPricePreview coin={coin} />
-                        </li>
-                    ))}
-                </ul>
-
-                <FeedbackButtons
-                    userId={userId}
-                    section="market-overview"
-                    contentId={coins.map(coin => coin.id).join(',')}
-                    source="coingecko"
-                    context={context}
-                />
-                </>
+                <div className="coin-ticker">
+                    {/* Three identical sequences: the track always covers the viewport,
+                        so a new sequence is entering on the right as one leaves on the left */}
+                    <div className="coin-ticker-track">
+                        {[0, 1, 2].map(sequence => (
+                            <ul
+                                className={`coin-strip ${sequence > 0 ? 'is-clone' : ''}`}
+                                key={sequence}
+                                aria-hidden={sequence > 0 ? 'true' : undefined}
+                            >
+                                {coins.map(coin => (
+                                    <li key={`${sequence}-${coin.id}`}>
+                                        <CoinPricePreview coin={coin} />
+                                    </li>
+                                ))}
+                            </ul>
+                        ))}
+                    </div>
+                </div>
             )}
+
+            <FeedbackButtons
+                userId={userId}
+                section="market-overview"
+                contentId={coins.map(coin => coin.id).join(',')}
+                source="coingecko"
+                context={context}
+            />
         </section>
     )
 }

@@ -38,6 +38,18 @@ function formatChange(change) {
     return `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`
 }
 
+// The chart shows the year to date, so its direction comes from the history itself,
+// not from the coin's 24 hour change
+function getYtdChange(history) {
+    if (history.length < 2) return null
+
+    const first = history[0].price
+    const last = history[history.length - 1].price
+    if (!first) return null
+
+    return ((last - first) / first) * 100
+}
+
 // Turns the price history into points inside a 600x200 viewBox
 function getChartPoints(history) {
     if (history.length < 2) return ''
@@ -132,6 +144,11 @@ export function CoinData({ coins = [], isLoading = false, hasFailed = false, use
     const isUp = activeCoin.priceChange24h >= 0
     const points = getChartPoints(history)
 
+    const ytdChange = getYtdChange(history)
+    const ytdDirection = ytdChange === null || ytdChange === 0
+        ? 'is-flat'
+        : (ytdChange > 0 ? 'is-up' : 'is-down')
+
     return (
         <section className="dashboard-section coin-data">
             <CoinDataHeader />
@@ -185,7 +202,12 @@ export function CoinData({ coins = [], isLoading = false, hasFailed = false, use
                     </div>
                 </dl>
 
-                <p className="chart-label">Price history · Year to date</p>
+                <p className="chart-label">
+                    Price history · Year to date
+                    {ytdChange !== null && (
+                        <span className={`chart-change ${ytdDirection}`}>{formatChange(ytdChange)}</span>
+                    )}
+                </p>
 
                 <div className="coin-chart-area">
                     {isHistoryLoading && <div className="chart-skeleton" aria-hidden="true"></div>}
@@ -196,7 +218,7 @@ export function CoinData({ coins = [], isLoading = false, hasFailed = false, use
 
                     {!isHistoryLoading && !hasHistoryFailed && points && (
                         <svg
-                            className={`coin-chart ${isUp ? 'is-up' : 'is-down'}`}
+                            className={`coin-chart ${ytdDirection}`}
                             viewBox="0 0 600 200"
                             preserveAspectRatio="none"
                             aria-hidden="true"
