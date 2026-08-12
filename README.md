@@ -5,7 +5,7 @@ A personalized crypto investor dashboard: a short onboarding quiz shapes a daily
 ## Live Demo
 
 - **Production:** https://ori-crypto-advisor.up.railway.app
-- **Repository:** https://github.com/OriChaiMatan/moveo-crypto-advisor
+- **Repository:** https://github.com/OriChaiMatan/crypto-advisor
 
 ## Features
 
