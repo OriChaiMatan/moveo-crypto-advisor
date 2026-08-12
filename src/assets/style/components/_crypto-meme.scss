@@ -1,0 +1,270 @@
+@use '../basic/variables' as *;
+
+.crypto-meme {
+    margin-bottom: $space-lg;
+}
+
+/* ---------- Section header ---------- */
+
+.crypto-meme-header {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-sm + 4px;
+    margin-bottom: $space-md;
+    padding-bottom: $space-sm + 4px;
+    border-bottom: 1px solid $clr-border;
+
+    h2 {
+        font-size: 17px;
+        letter-spacing: -0.01em;
+    }
+}
+
+.crypto-meme .header-accent {
+    flex: none;
+    width: 3px;
+    margin-top: 2px;
+    border-radius: 2px;
+    background-color: $clr-accent;
+}
+
+.crypto-meme .header-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.crypto-meme .header-subtitle {
+    margin-top: 2px;
+    color: $clr-text-muted;
+    font-size: 13px;
+}
+
+// Only shown for memes that actually came from Reddit
+.crypto-meme .header-badge {
+    flex: none;
+    padding: 4px 10px;
+    color: $clr-text-muted;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background-color: $clr-bg;
+    border: 1px solid $clr-border;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.crypto-meme .meme-state {
+    padding: $space-md 0;
+    color: $clr-text-muted;
+    font-size: 14px;
+}
+
+/* ---------- Layout ---------- */
+
+.meme-layout {
+    display: grid;
+    grid-template-columns: 55fr 45fr;
+    gap: $space-lg;
+    align-items: center;
+}
+
+/* ---------- Image ---------- */
+
+// A fixed frame with a darker surface, so tall and wide memes both look intentional
+.meme-frame {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    max-height: 340px;
+    margin: 0;
+    background-color: $clr-bg;
+    border: 1px solid $clr-border;
+    border-radius: $radius-lg;
+    transition: transform $transition, border-color $transition;
+}
+
+.meme-frame:hover {
+    transform: translateY(-3px);
+    border-color: rgba($clr-accent, 0.35);
+}
+
+// Contain, never crop: the whole joke stays visible whatever its shape
+.crypto-meme .meme-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* ---------- Content ---------- */
+
+.crypto-meme .meme-content {
+    min-width: 0;
+}
+
+.crypto-meme .meme-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: $clr-accent;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.crypto-meme .eyebrow-smile {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: $clr-accent;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.crypto-meme .meme-title {
+    margin-top: $space-sm + 2px;
+    color: $clr-text;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.meme-source {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-sm + 2px;
+    margin-top: $space-md;
+    padding-top: $space-sm + 4px;
+    border-top: 1px solid rgba($clr-border, 0.7);
+}
+
+.crypto-meme .source-sub {
+    color: $clr-text-muted;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.crypto-meme .source-link {
+    color: $clr-text-muted;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color $transition;
+
+    &:hover {
+        color: $clr-accent;
+    }
+}
+
+/* ---------- Skeleton ---------- */
+
+.crypto-meme .skeleton-block {
+    border-radius: 6px;
+    background: linear-gradient(90deg, $clr-surface-soft 25%, rgba($clr-border, 0.65) 37%, $clr-surface-soft 63%);
+    background-size: 400% 100%;
+    animation: crypto-meme-skeleton 1.8s ease-in-out infinite;
+
+    &.is-image {
+        aspect-ratio: 16 / 10;
+        max-height: 340px;
+        border-radius: $radius-lg;
+    }
+
+    &.is-eyebrow {
+        width: 120px;
+        height: 10px;
+    }
+
+    &.is-title {
+        height: 18px;
+        margin-top: 14px;
+    }
+
+    &.is-short {
+        width: 65%;
+    }
+
+    &.is-source {
+        width: 45%;
+        height: 12px;
+        margin-top: 26px;
+    }
+}
+
+@keyframes crypto-meme-skeleton {
+    from { background-position: 100% 0; }
+    to { background-position: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .crypto-meme .skeleton-block {
+        animation: none;
+    }
+
+    .meme-frame {
+        transition: none;
+    }
+
+    .meme-frame:hover {
+        transform: none;
+    }
+}
+
+/* ---------- Tablet ---------- */
+
+@media (max-width: $bp-tablet) {
+    .meme-layout {
+        gap: $space-lg;
+    }
+
+    .crypto-meme .meme-title {
+        font-size: 16px;
+    }
+}
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: $bp-mobile) {
+    .crypto-meme-header {
+        flex-wrap: wrap;
+        margin-bottom: $space-md;
+        padding-bottom: $space-sm + 4px;
+    }
+
+    // Image first at full width, then the text underneath
+    .meme-layout {
+        grid-template-columns: 1fr;
+        gap: $space-md;
+    }
+
+    // No forced ratio: the meme keeps its own shape, so there are no dark bands
+    .meme-frame {
+        aspect-ratio: auto;
+        max-height: none;
+    }
+
+    .crypto-meme .meme-image {
+        height: auto;
+        max-height: 520px; // only bites on extremely tall memes
+    }
+
+    .crypto-meme .skeleton-block.is-image {
+        aspect-ratio: 4 / 3;
+        max-height: none;
+    }
+
+    .crypto-meme .meme-title {
+        font-size: 15.5px;
+    }
+
+    .meme-source {
+        margin-top: $space-md;
+        padding-top: $space-sm + 4px;
+    }
+}

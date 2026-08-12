@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="HODL. Because selling requires making a decision.">
+    <rect width="800" height="600" fill="#0E1424"/>
+    <rect x="0" y="0" width="800" height="8" fill="#6366F1"/>
+
+    <text x="60" y="150" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="96" font-weight="700" fill="#F8FAFC" letter-spacing="8">HODL</text>
+
+    <g transform="translate(590 60)" fill="none" stroke="#6366F1" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="20" y="60" width="110" height="80" rx="12"/>
+        <path d="M45 60 V38 a30 30 0 0 1 60 0 V60"/>
+        <circle cx="75" cy="98" r="8" fill="#6366F1" stroke="none"/>
+    </g>
+
+    <line x1="60" y1="250" x2="740" y2="250" stroke="#25304A" stroke-width="2"/>
+
+    <text x="60" y="345" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30" fill="#94A3B8">Not conviction.</text>
+
+    <text x="60" y="440" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="700" fill="#F8FAFC">Because selling requires</text>
+    <text x="60" y="510" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="700" fill="#F8FAFC">making a decision</text>
+</svg>

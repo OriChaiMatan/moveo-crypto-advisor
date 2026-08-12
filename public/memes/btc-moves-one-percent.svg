@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="BTC moves 1 percent. Crypto Twitter: this changes everything.">
+    <rect width="800" height="600" fill="#0E1424"/>
+    <rect x="0" y="0" width="800" height="8" fill="#F7931A"/>
+
+    <text x="60" y="120" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="700" fill="#F8FAFC" letter-spacing="2">BTC MOVES 1%</text>
+
+    <g transform="translate(60 165)">
+        <rect x="0" y="0" width="620" height="16" rx="8" fill="#25304A"/>
+        <rect x="0" y="0" width="34" height="16" rx="8" fill="#F7931A"/>
+    </g>
+
+    <text x="60" y="290" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30" fill="#94A3B8">Crypto Twitter:</text>
+
+    <text x="60" y="400" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="62" font-weight="700" fill="#F8FAFC">THIS CHANGES</text>
+    <text x="60" y="480" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="62" font-weight="700" fill="#F8FAFC">EVERYTHING</text>
+
+    <text x="60" y="545" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="120" font-weight="700" fill="#F7931A" opacity="0.28">!!!</text>
+</svg>

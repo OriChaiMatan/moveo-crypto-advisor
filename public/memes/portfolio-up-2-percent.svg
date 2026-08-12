@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Portfolio up 2 percent. Me: retirement is basically secured.">
+    <rect width="800" height="600" fill="#0E1424"/>
+    <rect x="0" y="0" width="800" height="8" fill="#22C55E"/>
+
+    <text x="60" y="120" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="46" font-weight="700" fill="#F8FAFC" letter-spacing="2">PORTFOLIO</text>
+    <text x="60" y="185" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="72" font-weight="700" fill="#22C55E">+2%</text>
+
+    <g transform="translate(560 90)">
+        <path d="M0 120 L45 60 L90 90 L140 20" stroke="#22C55E" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M110 20 L140 20 L140 50" stroke="#22C55E" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+
+    <line x1="60" y1="300" x2="740" y2="300" stroke="#25304A" stroke-width="2"/>
+
+    <text x="60" y="380" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30" fill="#94A3B8">Me:</text>
+    <text x="60" y="460" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="700" fill="#F8FAFC">retirement is</text>
+    <text x="60" y="525" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="700" fill="#F8FAFC">basically secured</text>
+</svg>

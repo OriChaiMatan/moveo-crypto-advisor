@@ -92,11 +92,89 @@ const CONTENT_STYLE = {
     'fun': 'Use a lighter tone and at most one mild playful phrase. Stay factual, with no meme style exaggeration.',
 }
 
+const MEME_API_URL = 'https://meme-api.com/gimme/cryptocurrencymemes'
+const MEME_IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp']
+
+// Our own memes, served from /public. Shown when the meme API is unavailable.
+// They have no postUrl or subreddit, so no Reddit source line is rendered for them.
+const FALLBACK_MEMES = [
+    {
+        id: 'fallback-buy-the-dip',
+        title: 'Buy the dip',
+        imageUrl: '/memes/buy-the-dip.svg',
+        postUrl: null,
+        subreddit: null,
+    },
+    {
+        id: 'fallback-portfolio-up',
+        title: 'Portfolio +2%',
+        imageUrl: '/memes/portfolio-up-2-percent.svg',
+        postUrl: null,
+        subreddit: null,
+    },
+    {
+        id: 'fallback-hodl',
+        title: 'HODL',
+        imageUrl: '/memes/hodl.svg',
+        postUrl: null,
+        subreddit: null,
+    },
+    {
+        id: 'fallback-btc-moves',
+        title: 'BTC moves 1%',
+        imageUrl: '/memes/btc-moves-one-percent.svg',
+        postUrl: null,
+        subreddit: null,
+    },
+]
+
 export const dashboardService = {
     getNews,
     getCoinData,
     getCoinHistory,
     getInsight,
+    getMeme,
+}
+
+async function getMeme() {
+    try {
+        const res = await fetch(MEME_API_URL)
+        if (!res.ok) throw new Error(`Meme request failed with status ${res.status}`)
+
+        const data = await res.json()
+        const meme = _normalizeMeme(data)
+        if (!meme) throw new Error('Meme response was not usable')
+
+        return meme
+    } catch (err) {
+        console.log('Using fallback meme:', err.message)
+        return _getFallbackMeme()
+    }
+}
+
+// Returns null for anything we should not show, so the caller falls back
+function _normalizeMeme(post) {
+    if (!post?.url || post.nsfw || post.spoiler) return null
+    if (!_isImageUrl(post.url)) return null
+
+    return {
+        id: post.postLink || post.url,
+        title: post.title || '',
+        imageUrl: post.url,
+        postUrl: post.postLink || '',
+        subreddit: post.subreddit || '',
+    }
+}
+
+function _isImageUrl(url) {
+    const path = url.split('?')[0].toLowerCase()
+    return MEME_IMAGE_EXTENSIONS.some(extension => path.endsWith(extension))
+}
+
+function _getFallbackMeme() {
+    if (!FALLBACK_MEMES.length) return null
+
+    return FALLBACK_MEMES[Math.floor(Math.random() * FALLBACK_MEMES.length)]
 }
 
 // Reuses today's insight while it still matches the user's preferences
@@ -110,12 +188,21 @@ async function getInsight(coins = [], investorType = '', contentTypes = []) {
         return savedInsight
     }
 
-    // Nothing is saved if this throws, so a failed request keeps the error state
-    const insight = await _createInsight(coins, investorType, contentTypes)
-    const insightToSave = { ...insight, contextKey }
-    localStorage.setItem(INSIGHT_STORAGE_KEY, JSON.stringify(insightToSave))
+    try {
+        const insight = await _createInsight(coins, investorType, contentTypes)
+        const insightToSave = { ...insight, contextKey }
+        localStorage.setItem(INSIGHT_STORAGE_KEY, JSON.stringify(insightToSave))
 
-    return insightToSave
+        return insightToSave
+    } catch (err) {
+        // The local insight is never saved, so the next visit can still reach OpenRouter
+        console.log('Using local insight:', err.message)
+
+        const fallbackInsight = _createFallbackInsight(coins)
+        if (!fallbackInsight) throw err
+
+        return fallbackInsight
+    }
 }
 
 // A new calendar day means a new insight, even if only minutes have passed
@@ -216,29 +303,86 @@ function _getInsightSystemPrompt() {
     ].join('\n')
 }
 
-// The comparisons are calculated here, so the model never has to work them out itself
+function _changeOf(coin) {
+    return coin.priceChange24h ?? 0
+}
+
+function _formatChange(change) {
+    return `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`
+}
+
+// The one place the comparisons are calculated. The prompt and the local
+// fallback insight both build on this, so the numbers can never disagree.
 function _getMarketFacts(coins) {
-    const changeOf = coin => coin.priceChange24h ?? 0
-    const formatChange = change => `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`
+    const sorted = [...coins].sort((a, b) => _changeOf(b) - _changeOf(a))
 
-    const sorted = [...coins].sort((a, b) => changeOf(b) - changeOf(a))
-    const strongest = sorted[0]
-    const weakest = sorted[sorted.length - 1]
+    const up = coins.filter(coin => _changeOf(coin) > 0).length
+    const down = coins.filter(coin => _changeOf(coin) < 0).length
 
-    const up = coins.filter(coin => changeOf(coin) > 0).length
-    const down = coins.filter(coin => changeOf(coin) < 0).length
-    const unchanged = coins.length - up - down
-
-    const facts = []
-    if (coins.length > 1) {
-        facts.push(`Strongest 24 hour performer: ${strongest.symbol} (${formatChange(changeOf(strongest))})`)
-        facts.push(`Weakest 24 hour performer: ${weakest.symbol} (${formatChange(changeOf(weakest))})`)
+    return {
+        strongest: sorted[0],
+        weakest: sorted[sorted.length - 1],
+        up,
+        down,
+        unchanged: coins.length - up - down,
+        total: coins.length,
     }
-    facts.push(`Assets up over 24 hours: ${up} of ${coins.length}`)
-    facts.push(`Assets down over 24 hours: ${down} of ${coins.length}`)
-    if (unchanged) facts.push(`Assets unchanged over 24 hours: ${unchanged} of ${coins.length}`)
+}
 
-    return facts.join('\n')
+// The exact wording the model receives, unchanged
+function _formatMarketFacts(facts) {
+    const lines = []
+
+    if (facts.total > 1) {
+        lines.push(`Strongest 24 hour performer: ${facts.strongest.symbol} (${_formatChange(_changeOf(facts.strongest))})`)
+        lines.push(`Weakest 24 hour performer: ${facts.weakest.symbol} (${_formatChange(_changeOf(facts.weakest))})`)
+    }
+    lines.push(`Assets up over 24 hours: ${facts.up} of ${facts.total}`)
+    lines.push(`Assets down over 24 hours: ${facts.down} of ${facts.total}`)
+    if (facts.unchanged) lines.push(`Assets unchanged over 24 hours: ${facts.unchanged} of ${facts.total}`)
+
+    return lines.join('\n')
+}
+
+// Plain factual insight built from the same facts, used when OpenRouter is unavailable
+function _createFallbackInsight(coins) {
+    if (!coins.length) return null
+
+    const facts = _getMarketFacts(coins)
+    const strongestChange = _changeOf(facts.strongest)
+    const weakestChange = _changeOf(facts.weakest)
+    const sentences = []
+
+    if (facts.total === 1) {
+        sentences.push(`${facts.strongest.symbol} is your only selected asset, ${_describeMove(strongestChange)} over the last 24 hours.`)
+    } else if (strongestChange === weakestChange) {
+        sentences.push(`All ${facts.total} of your selected assets are ${_describeMove(strongestChange)} over the last 24 hours.`)
+    } else {
+        sentences.push(`${facts.strongest.symbol} is the strongest performer among your selected assets at ${_formatChange(strongestChange)}, while ${facts.weakest.symbol} is the weakest at ${_formatChange(weakestChange)}.`)
+
+        const counts = []
+        if (facts.up) counts.push(`${facts.up} up`)
+        if (facts.down) counts.push(`${facts.down} down`)
+        if (facts.unchanged) counts.push(`${facts.unchanged} unchanged`)
+        sentences.push(`Across your ${facts.total} selected assets that is ${_joinParts(counts)} over the last 24 hours.`)
+    }
+
+    return {
+        title: 'Today\'s market snapshot',
+        text: sentences.join(' '),
+        createdAt: Date.now(),
+    }
+}
+
+function _describeMove(change) {
+    if (change > 0) return `up ${_formatChange(change).slice(1)}`
+    if (change < 0) return `down ${Math.abs(change).toFixed(2)}%`
+    return 'unchanged'
+}
+
+function _joinParts(parts) {
+    if (parts.length === 1) return parts[0]
+    return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
 }
 
 function _getInsightUserPrompt(coins, investorType, contentTypes) {
@@ -262,7 +406,7 @@ function _getInsightUserPrompt(coins, investorType, contentTypes) {
         marketLines,
         '',
         'Facts already calculated by the application. Treat these as authoritative and use them as they are:',
-        _getMarketFacts(coins),
+        _formatMarketFacts(_getMarketFacts(coins)),
     ].filter(Boolean).join('\n')
 }
 

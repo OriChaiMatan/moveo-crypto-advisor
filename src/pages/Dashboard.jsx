@@ -7,6 +7,7 @@ import { CoinPricesList } from '../components/CoinPricesList'
 import { CoinData } from '../components/CoinData'
 import { AIInsight } from '../components/AIInsight'
 import { MarketNewsList } from '../components/MarketNewsList'
+import { CryptoMeme } from '../components/CryptoMeme'
 
 // Readable labels for the values saved during onboarding
 const ASSET_LABELS = {
@@ -234,6 +235,8 @@ export function Dashboard() {
                     investorType={preferences?.investorType || ''}
                     isPreferencesLoading={isPreferencesLoading}
                 />
+
+                <CryptoMeme />
 
             </main>
         </div>
