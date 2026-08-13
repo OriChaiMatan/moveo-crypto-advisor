@@ -34,9 +34,9 @@ Thumbs up or down on each of the four sections. Votes are stored in MongoDB toge
 
 ## Technology Stack
 
-- **Frontend** — React 19, Vite, React Router, SCSS
-- **Backend** — Node.js, Express 5
-- **Database** — MongoDB Atlas (official Node driver)
+- **Frontend** — React, Vite, React Router, SCSS
+- **Backend** — Node.js, Express 
+- **Database** — MongoDB Atlas
 - **Authentication** — JWT in an HttpOnly cookie, bcrypt password hashing
 - **External APIs** — CoinGecko, NewsData.io, OpenRouter, meme-api.com
 - **Deployment** — Railway (single service serving both the API and the built frontend)
@@ -51,6 +51,8 @@ All external API calls are made by the backend, so API keys never reach the brow
 | Market News | NewsData.io | Predefined local fallback content |
 | AI Insight | OpenRouter | A factual summary generated from the current market data |
 | Crypto Meme | meme-api.com | One of four memes included with the project |
+
+The assignment suggested CryptoPanic for market news. During development, its API was not available for the required integration, so NewsData.io was used as a free alternative.
 
 ## Setup Instructions
 
@@ -76,7 +78,7 @@ Required variables in `backend/.env`:
 | `DB_URL` | MongoDB connection string |
 | `JWT_SECRET` | Secret used to sign login tokens |
 
-Optional API keys — without them the matching section falls back to local content:
+API keys:
 
 | Variable | Description |
 |---|---|
@@ -88,7 +90,7 @@ Then start both parts in separate terminals:
 
 ```bash
 # backend, port 5001
-cd backend && npm run dev
+cd backend && npm start
 
 # frontend, port 5173
 npm run dev
@@ -98,20 +100,129 @@ Open http://localhost:5173. The frontend needs no configuration for local develo
 
 ## AI Tools Used
 
-ChatGPT and Claude Code were used as engineering assistants during development. They supported architecture discussions, debugging external API behaviour, code review and refactoring, and verification of the deployed application. I used these tools to explore alternatives and review implementation decisions, while keeping responsibility for the final design and code.
+I used ChatGPT and Claude Code throughout the project as part of my development workflow.
 
-## Future Feedback Improvements
+I defined the application architecture, technology stack, data flow, feature requirements and implementation direction. I then used the AI tools within those decisions rather than asking them to independently design or build the application.
 
-*A proposal for the assignment bonus — not implemented.*
+ChatGPT was mainly used to discuss architecture and implementation approaches, think through technical decisions, investigate problems and review solutions.
 
-The application already stores useful feedback data for future personalization. Each vote is saved together with the user's preferences, the section being rated, and the specific content that was shown at that moment. This creates historical examples of which content different users reacted positively or negatively to.
+Claude Code was used directly within the repository to write and modify code according to my specifications. I provided the required behavior, technologies, constraints and implementation direction, then reviewed the generated changes, tested the result and requested corrections or improvements when needed.
 
-A future recommendation process could use this data in stages:
+I also used Claude Code for debugging, refactoring, running tests and builds, reviewing frontend and backend code, and checking the deployed application.
 
-1. **Content ranking** — aggregate feedback by assets, investor type and content preferences to learn which types of content perform better for different user groups, then use those scores to influence the order and selection of dashboard content.
+The process was iterative: define the problem and approach, implement with AI assistance, review the code, test the behavior, identify issues and refine the solution. I remained responsible for the technical decisions, understanding the implementation and validating the final application.
 
-2. **Personalized recommendations** — as more feedback is collected for an individual user, their own history could receive more weight than general group behavior. For example, two Day Traders following Bitcoin could gradually receive different recommendations based on what each of them consistently likes or dislikes.
+## Future Feedback Improvements - Bonus
 
-3. **AI Insight personalization** — feedback on daily insights could be used to adjust what the AI focuses on and how the insight is written for each user, such as favoring short-term movements, comparisons or broader market context.
+The current feedback system was designed not only to store whether a user liked or disliked something, but also to preserve the context behind that decision.
 
-I would start with ranking and recommendation logic before considering model fine-tuning. It is simpler, explainable, and can already make use of the feedback data the application collects today. Model training would only become relevant after enough high-quality feedback has been accumulated.
+Each vote is stored together with the user's preferences and the content that was shown at that moment. This creates historical labeled data that can later be used to improve personalization and recommendations.
+
+### 1. Collect Feedback Data
+
+Each thumbs-up or thumbs-down can be treated as a positive or negative example.
+
+A future recommendation dataset could include:
+
+- User and investor type
+- Selected crypto assets
+- Content preferences
+- Dashboard section
+- Content shown to the user
+- Content source
+- Relevant market context
+- Positive or negative vote
+- Timestamp
+
+Keeping the historical context is important because a vote only has meaning when we know what the user was reacting to.
+
+### 2. Build a Recommendation Dataset
+
+As more feedback is collected, the historical records can be transformed into a dataset describing which types of users responded positively or negatively to different types of content.
+
+For example, the system may learn that Day Traders following BTC tend to prefer short-term market comparisons, while HODLers may respond better to longer-term market context.
+
+Before using this data, duplicate or invalid records should be removed and highly active users should be prevented from having disproportionate influence on the results.
+
+### 3. Start With Content Ranking
+
+I would not start by training or fine-tuning an LLM.
+
+The first improvement would be an explainable ranking layer that aggregates feedback by factors such as investor type, selected assets and content preferences.
+
+These scores could influence:
+
+- Which news articles are prioritized
+- Which dashboard sections appear first
+- Which type of AI insight is generated
+- Which content categories receive more exposure
+
+New users could initially receive recommendations based on their onboarding preferences and feedback from similar users.
+
+### 4. Add Individual Personalization
+
+As an individual user generates more feedback, their own history can gradually receive more weight than general group behavior.
+
+This allows two users with the same onboarding choices to develop different experiences over time.
+
+A recommendation score could conceptually combine:
+
+`segment preferences + individual history + current content relevance`
+
+This creates a gradual transition from onboarding-based personalization to behavior-based personalization.
+
+### 5. Personalize AI Insights
+
+Feedback on AI Insights can first be used to improve the context and instructions sent to the LLM without training a new model.
+
+For example, if a user consistently likes short asset comparisons and 24-hour market movements, future prompts can prioritize that style. Another user may prefer broader market explanations or longer-term context.
+
+This provides personalized AI output while continuing to use the same underlying model.
+
+### 6. Prepare Feedback for Future Model Training
+
+Once enough high-quality feedback has been collected, the historical records could be converted into a training dataset.
+
+For AI Insights, each training example could contain:
+
+`user preferences + market context + generated insight + user feedback`
+
+Thumbs-up examples would represent responses that worked well for a given context, while thumbs-down examples would represent responses that should be avoided or improved.
+
+The preparation process would include cleaning invalid or duplicate records, balancing the dataset so that highly active users do not dominate it, and splitting the data into training, validation and test sets.
+
+For preference-based training, positive and negative examples from similar contexts could also be paired:
+
+`user context + market context + preferred insight + non-preferred insight`
+
+This dataset could later be used to train a recommendation model that predicts which content a user is likely to prefer, or, with enough AI Insight feedback, to fine-tune or preference-optimize an LLM toward the types of insights users respond to positively.
+
+I would not start with LLM fine-tuning. Ranking and prompt personalization can use the collected feedback much earlier, while model training should only begin once the dataset is large, diverse and reliable enough.
+
+### 7. Measure the Improvement
+
+Any recommendation change should be evaluated against the current system.
+
+Useful metrics could include:
+
+- Positive feedback rate
+- Negative feedback rate
+- Feedback participation
+- Section engagement
+- Repeat usage
+
+A larger version of the product could also use A/B testing to compare the existing dashboard with the feedback-based recommendation system.
+
+### Future Feedback Loop
+
+The long-term process would be:
+
+`Show content → Collect contextual feedback → Store user, content and context → Build and clean the dataset → Improve ranking and AI prompts → Train when enough data exists → Evaluate results → Repeat`
+
+This creates a continuous personalization loop where recommendations improve as more meaningful feedback is collected.
+
+The current implementation already provides the foundation for this process by preserving historical feedback together with the context that gives each vote meaning. The next step would therefore be ranking and personalization, followed by model training only when the collected dataset is large, diverse and reliable enough.
+
+## Database Access
+
+Read-only access to the MongoDB Atlas database is available for review. The connection details and reviewer credentials are provided separately with the submission and are not stored in this repository.
